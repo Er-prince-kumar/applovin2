@@ -95,3 +95,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to save payout details' }, { status: 500 });
   }
 }
+
+export async function DELETE() {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { payoutDetails: null },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Bank account unlinked successfully',
+    });
+  } catch (error) {
+    console.error('Error deleting payout details:', error);
+    return NextResponse.json({ error: 'Failed to unlink bank details' }, { status: 500 });
+  }
+}
