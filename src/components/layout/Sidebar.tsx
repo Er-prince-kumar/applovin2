@@ -115,31 +115,22 @@ export default function Sidebar({ user }: SidebarProps) {
         )}
       </div>
 
-      {/* Mobile App Download Card */}
+      {/* Mobile App Install Card */}
       <div className="mx-3 my-2 p-3 rounded-xl bg-gradient-to-br from-emerald-950/40 via-[#151c28] to-[#111722] border border-emerald-500/20 text-xs">
         <div className="flex items-center gap-2 text-emerald-400 font-semibold mb-1">
           <Smartphone className="w-4 h-4" />
-          <span>Mobile App (APK)</span>
+          <span>LinkEarn Mobile</span>
         </div>
         <p className="text-[11px] text-gray-400 mb-2.5">
-          Manage earnings & smart links directly from your phone.
+          Install the full app on your phone with zero download errors.
         </p>
-        <div className="flex items-center gap-2">
-          <a
-            href="/api/download/apk"
-            download="LinkEarn-Publisher-v1.0.0.apk"
-            className="flex-1 text-center py-1.5 px-2 bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-[11px] rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm"
-          >
-            <Download className="w-3 h-3" />
-            <span>Get APK</span>
-          </a>
-          <Link
-            href="/download"
-            className="py-1.5 px-2 bg-[#1a2233] hover:bg-[#222c42] text-gray-300 text-[11px] font-medium rounded-lg border border-[#26334d] transition-colors"
-          >
-            Details
-          </Link>
-        </div>
+        <Link
+          href="/download"
+          className="w-full text-center py-1.5 px-2 bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-[11px] rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+        >
+          <Smartphone className="w-3.5 h-3.5 text-gray-950 stroke-[2.5]" />
+          <span>Install on Phone</span>
+        </Link>
       </div>
 
       {/* User Footer & Logout */}
