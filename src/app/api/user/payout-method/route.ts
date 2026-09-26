@@ -25,6 +25,9 @@ const payoutMethodSchema = z.object({
   usdtAddress: z.string().optional().nullable(),
 });
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   try {
     const user = await getCurrentUser();
@@ -37,7 +40,15 @@ export async function GET() {
       select: { payoutDetails: true },
     });
 
-    const parsed = userData?.payoutDetails ? JSON.parse(userData.payoutDetails) : null;
+    const parsed = (() => {
+      if (!userData?.payoutDetails) return null;
+      try {
+        const obj = JSON.parse(userData.payoutDetails);
+        return typeof obj === 'object' && obj !== null ? obj : null;
+      } catch {
+        return null;
+      }
+    })();
 
     return NextResponse.json({ payoutDetails: parsed });
   } catch (error) {
