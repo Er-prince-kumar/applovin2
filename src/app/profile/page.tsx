@@ -4,6 +4,9 @@ import { getCurrentUser } from '@/lib/auth';
 import DashboardShell from '@/components/layout/DashboardShell';
 import ProfileView from './ProfileView';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function ProfilePage() {
   const user = await getCurrentUser();
   if (!user) {
