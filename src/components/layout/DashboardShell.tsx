@@ -6,6 +6,7 @@ import Topbar from './Topbar';
 import MobileNav from './MobileNav';
 import MobileBottomBar from './MobileBottomBar';
 import { ToastProvider } from '@/components/ui/Toast';
+import AppInstallModal from '@/components/pwa/AppInstallModal';
 
 interface DashboardShellProps {
   user: {
@@ -34,6 +35,7 @@ export default function DashboardShell({
 
   return (
     <ToastProvider>
+      <AppInstallModal />
       <div className="min-h-screen bg-[#0B0F17] text-gray-100 flex">
         {/* Desktop Sidebar */}
         <Sidebar user={user} />

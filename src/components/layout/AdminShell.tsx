@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import AdminSidebar from './AdminSidebar';
 import AdminTopbar from './AdminTopbar';
 import { ToastProvider } from '@/components/ui/Toast';
+import AppInstallModal from '@/components/pwa/AppInstallModal';
 import { Menu, X } from 'lucide-react';
 import Logo from '@/components/brand/Logo';
 import Link from 'next/link';
@@ -30,6 +31,7 @@ export default function AdminShell({
 
   return (
     <ToastProvider>
+      <AppInstallModal />
       <div className="min-h-screen bg-[#080B11] text-gray-100 flex">
         {/* Desktop Sidebar */}
         <AdminSidebar admin={admin} />

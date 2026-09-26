@@ -4,7 +4,9 @@ import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Logo from '@/components/brand/Logo';
-import { Lock, Mail, User, ArrowRight, AlertCircle, Share2, Check } from 'lucide-react';
+import { Lock, Mail, User, ArrowRight, AlertCircle, Share2, Check, Eye, EyeOff } from 'lucide-react';
+import PasswordStrengthIndicator from '@/components/auth/PasswordStrengthIndicator';
+import { validatePassword } from '@/lib/password';
 
 function RegisterForm() {
   const router = useRouter();
@@ -13,6 +15,7 @@ function RegisterForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [referralCode, setReferralCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +30,14 @@ function RegisterForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    // Validate password combination
+    const validation = validatePassword(password);
+    if (!validation.isValid) {
+      setError(`Password must include: ${validation.errors.join(', ')}`);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -46,6 +57,9 @@ function RegisterForm() {
         throw new Error(data.error || 'Failed to create account');
       }
 
+      // Prompt app install on dashboard
+      sessionStorage.setItem('showInstallPromptAfterLogin', 'true');
+
       router.push('/dashboard');
       router.refresh();
     } catch (err: any) {
@@ -54,6 +68,8 @@ function RegisterForm() {
       setLoading(false);
     }
   }
+
+  const passwordValidation = validatePassword(password);
 
   return (
     <div className="min-h-screen bg-[#0B0F17] text-white flex flex-col justify-center items-center p-6 relative">
@@ -123,20 +139,30 @@ function RegisterForm() {
 
           <div>
             <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
-              Password (Min 8 chars)
+              Password (Combination Required)
             </label>
             <div className="relative">
               <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
-                minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••••••"
-                className="w-full bg-[#0D121C] border border-[#232D3F] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500 transition-colors"
+                placeholder="e.g. Secret#2026"
+                className="w-full bg-[#0D121C] border border-[#232D3F] rounded-xl pl-10 pr-10 py-2.5 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500 transition-colors"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-gray-400 hover:text-white transition-colors"
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
+
+            {/* Live Password Strength Indicator & Checklist */}
+            <PasswordStrengthIndicator password={password} showDetails={true} />
           </div>
 
           <div>
@@ -157,8 +183,8 @@ function RegisterForm() {
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 mt-6 disabled:opacity-50"
+            disabled={loading || (password.length > 0 && !passwordValidation.isValid)}
+            className="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <span className="w-5 h-5 border-2 border-gray-950 border-t-transparent rounded-full animate-spin" />

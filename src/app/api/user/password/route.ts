@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getCurrentUser, comparePassword, hashPassword } from '@/lib/auth';
+import { passwordComplexitySchema } from '@/lib/password';
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z.string().min(8, 'New password must be at least 8 characters'),
+  newPassword: passwordComplexitySchema,
 });
 
 export async function POST(request: NextRequest) {

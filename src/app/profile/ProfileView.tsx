@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { User, Mail, Lock, ShieldCheck, Key, Check, AlertCircle, Save } from 'lucide-react';
+import { User, Mail, Lock, ShieldCheck, Key, Check, AlertCircle, Save, Eye, EyeOff } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
+import { validatePassword } from '@/lib/password';
+import PasswordStrengthIndicator from '@/components/auth/PasswordStrengthIndicator';
 
 interface ProfileViewProps {
   user: {
@@ -24,6 +26,9 @@ export default function ProfileView({ user }: ProfileViewProps) {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [savingPass, setSavingPass] = useState(false);
   const [passError, setPassError] = useState<string | null>(null);
 
@@ -54,8 +59,9 @@ export default function ProfileView({ user }: ProfileViewProps) {
       return;
     }
 
-    if (newPassword.length < 8) {
-      setPassError('New password must be at least 8 characters');
+    const validation = validatePassword(newPassword);
+    if (!validation.isValid) {
+      setPassError(`New password must include: ${validation.errors.join(', ')}`);
       return;
     }
 
@@ -180,32 +186,49 @@ export default function ProfileView({ user }: ProfileViewProps) {
             <div className="relative">
               <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
               <input
-                type="password"
+                type={showCurrentPass ? 'text' : 'password'}
                 required
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full bg-[#0D121C] border border-[#232D3F] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="w-full bg-[#0D121C] border border-[#232D3F] rounded-xl pl-10 pr-10 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
               />
+              <button
+                type="button"
+                onClick={() => setShowCurrentPass(!showCurrentPass)}
+                className="absolute right-3 top-3 text-gray-400 hover:text-white transition-colors"
+                title={showCurrentPass ? 'Hide password' : 'Show password'}
+              >
+                {showCurrentPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
-              New Password (Min 8 chars)
+              New Password (Combination Required)
             </label>
             <div className="relative">
               <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
               <input
-                type="password"
+                type={showNewPass ? 'text' : 'password'}
                 required
-                minLength={8}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full bg-[#0D121C] border border-[#232D3F] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="w-full bg-[#0D121C] border border-[#232D3F] rounded-xl pl-10 pr-10 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
               />
+              <button
+                type="button"
+                onClick={() => setShowNewPass(!showNewPass)}
+                className="absolute right-3 top-3 text-gray-400 hover:text-white transition-colors"
+                title={showNewPass ? 'Hide password' : 'Show password'}
+              >
+                {showNewPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
+            {/* Real-time strength meter */}
+            <PasswordStrengthIndicator password={newPassword} showDetails={true} />
           </div>
 
           <div>
@@ -215,14 +238,21 @@ export default function ProfileView({ user }: ProfileViewProps) {
             <div className="relative">
               <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
               <input
-                type="password"
+                type={showConfirmPass ? 'text' : 'password'}
                 required
-                minLength={8}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full bg-[#0D121C] border border-[#232D3F] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="w-full bg-[#0D121C] border border-[#232D3F] rounded-xl pl-10 pr-10 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPass(!showConfirmPass)}
+                className="absolute right-3 top-3 text-gray-400 hover:text-white transition-colors"
+                title={showConfirmPass ? 'Hide password' : 'Show password'}
+              >
+                {showConfirmPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
