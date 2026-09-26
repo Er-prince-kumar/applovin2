@@ -59,8 +59,8 @@ export default async function LandingPage() {
               href="/download"
               className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-gray-300 hover:text-white text-xs font-semibold border border-[#232D3F] hover:border-gray-600 transition-colors"
             >
-              <Download className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Get APK</span>
+              <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Install App</span>
             </Link>
             {user ? (
               <Link
