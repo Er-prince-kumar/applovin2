@@ -21,6 +21,9 @@ const withdrawalRequestSchema = z.object({
   notes: z.string().optional().nullable(),
 });
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   try {
     const user = await getCurrentUser();
@@ -43,7 +46,15 @@ export async function GET() {
     ]);
 
     const minAmount = setting ? parseFloat(setting.value) : 10.0;
-    const parsedPayoutDetails = userData?.payoutDetails ? JSON.parse(userData.payoutDetails) : null;
+    const parsedPayoutDetails = (() => {
+      if (!userData?.payoutDetails) return null;
+      try {
+        const obj = JSON.parse(userData.payoutDetails);
+        return typeof obj === 'object' && obj !== null ? obj : null;
+      } catch {
+        return null;
+      }
+    })();
 
     return NextResponse.json({
       withdrawals,
