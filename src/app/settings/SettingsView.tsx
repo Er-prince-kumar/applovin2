@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Bell, CreditCard, Key, Shield, Check, Copy } from 'lucide-react';
+import Link from 'next/link';
+import { Bell, CreditCard, Key, Shield, Check, Copy, Building2, ArrowRight } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 
 export default function SettingsView({ user }: { user: any }) {
