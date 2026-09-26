@@ -45,7 +45,7 @@ interface AdNetworkViewProps {
 export default function AdNetworkView({ initialConfig }: AdNetworkViewProps) {
   const [config, setConfig] = useState<AdNetworkConfig>(initialConfig);
   const [isSaving, setIsSaving] = useState(false);
-  const { addToast } = useToast();
+  const { toast } = useToast();
 
   const handleChange = (field: keyof AdNetworkConfig, value: any) => {
     setConfig((prev) => ({ ...prev, [field]: value }));
@@ -62,20 +62,12 @@ export default function AdNetworkView({ initialConfig }: AdNetworkViewProps) {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        addToast({
-          type: 'success',
-          title: 'Ad Networks Saved',
-          message: 'Ad unit keys & Anti-Ban policies updated successfully!',
-        });
+        toast('Ad unit keys & Anti-Ban policies updated successfully!', 'success');
       } else {
         throw new Error(data.error || 'Failed to save');
       }
     } catch (err: any) {
-      addToast({
-        type: 'error',
-        title: 'Save Failed',
-        message: err.message || 'Could not save ad network settings',
-      });
+      toast(err.message || 'Could not save ad network settings', 'error');
     } finally {
       setIsSaving(false);
     }
