@@ -159,6 +159,41 @@ export default function AdminWithdrawalsView({
 
   return (
     <div className="space-y-6">
+      {/* Top Tab Switcher */}
+      <div className="flex items-center gap-3 border-b border-[#1E2638] pb-4">
+        <button
+          type="button"
+          onClick={() => setActiveTab('PROFILES')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all ${
+            activeTab === 'PROFILES'
+              ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/25'
+              : 'bg-[#151B26] text-gray-400 hover:text-white border border-[#232D3F]'
+          }`}
+        >
+          <Building2 className="w-4 h-4" />
+          <span>Linked User Bank & UPI Accounts</span>
+          <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-black/30 font-mono">
+            {filteredPayoutProfiles.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('REQUESTS')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all ${
+            activeTab === 'REQUESTS'
+              ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/25'
+              : 'bg-[#151B26] text-gray-400 hover:text-white border border-[#232D3F]'
+          }`}
+        >
+          <Wallet className="w-4 h-4" />
+          <span>Disbursement Requests</span>
+          <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-black/30 font-mono">
+            {filteredWithdrawals.length}
+          </span>
+        </button>
+      </div>
+
       {/* Search Header */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-[#151B26] border border-[#232D3F] rounded-2xl p-4 shadow-lg">
         <div className="relative flex-1">
@@ -167,114 +202,237 @@ export default function AdminWithdrawalsView({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search disbursements by publisher, email, destination address..."
+            placeholder={
+              activeTab === 'PROFILES'
+                ? 'Search by publisher, email, UPI ID, or account number...'
+                : 'Search disbursements by publisher, email, destination address...'
+            }
             className="w-full bg-[#0D121C] border border-[#232D3F] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
           />
         </div>
 
-        <div className="flex items-center bg-[#0D121C] border border-[#232D3F] rounded-xl p-1 text-xs overflow-x-auto">
-          {['ALL', 'PENDING', 'APPROVED', 'PROCESSING', 'PAID', 'REJECTED'].map((st) => (
-            <button
-              key={st}
-              onClick={() => setFilter(st)}
-              className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                filter === st ? 'bg-purple-500/20 text-purple-300' : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              {st}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Withdrawals Table */}
-      <div className="bg-[#151B26] border border-[#232D3F] rounded-2xl p-6 shadow-xl overflow-x-auto">
-        <table className="w-full text-left text-xs">
-          <thead>
-            <tr className="border-b border-[#232D3F] text-gray-400 uppercase text-[10px] tracking-wider">
-              <th className="pb-3 font-semibold">Request Date</th>
-              <th className="pb-3 font-semibold">Publisher</th>
-              <th className="pb-3 font-semibold">Method & Target Account</th>
-              <th className="pb-3 font-semibold text-right">Amount</th>
-              <th className="pb-3 font-semibold">Status</th>
-              <th className="pb-3 font-semibold">Admin Audit Note</th>
-              <th className="pb-3 font-semibold text-center">Manage</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#1E2638]">
-            {filtered.map((w) => (
-              <tr key={w.id} className="hover:bg-[#111622] transition-colors">
-                <td className="py-3.5 text-gray-400 font-mono text-[11px] whitespace-nowrap">
-                  {formatDate(w.createdAt)}
-                </td>
-                <td className="py-3.5">
-                  <div className="font-semibold text-white">{w.user.name}</div>
-                  <div className="text-[11px] text-gray-400">{w.user.email}</div>
-                </td>
-                <td className="py-3.5">
-                  <span className="font-bold text-gray-200">{w.paymentMethod}</span>
-                  <div className="font-mono text-[11px] text-gray-400 max-w-xs truncate">
-                    {w.paymentDetails}
-                  </div>
-                </td>
-                <td className="py-3.5 text-right font-bold text-sm text-emerald-400">
-                  {formatCurrency(w.amount)}
-                </td>
-                <td className="py-3.5">{getStatusBadge(w.status)}</td>
-                <td className="py-3.5 text-gray-400 italic max-w-xs truncate">
-                  {w.adminNote || '—'}
-                </td>
-                <td className="py-3.5 text-center">
-                  <div className="flex items-center justify-center gap-1.5">
-                    {w.status === 'PENDING' && (
-                      <>
-                        <button
-                          onClick={() => openActionModal(w, 'APPROVED')}
-                          className="px-2.5 py-1 rounded bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 text-[11px] font-semibold border border-blue-500/20"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => openActionModal(w, 'REJECTED')}
-                          className="px-2 py-1 rounded bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 text-[11px] font-semibold border border-rose-500/20"
-                        >
-                          Reject
-                        </button>
-                      </>
-                    )}
-
-                    {w.status === 'APPROVED' && (
-                      <button
-                        onClick={() => openActionModal(w, 'PROCESSING')}
-                        className="px-2.5 py-1 rounded bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 text-[11px] font-semibold border border-purple-500/20"
-                      >
-                        Process
-                      </button>
-                    )}
-
-                    {w.status === 'PROCESSING' && (
-                      <button
-                        onClick={() => openActionModal(w, 'PAID')}
-                        className="px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-[11px] font-semibold border border-emerald-500/20"
-                      >
-                        Mark Paid
-                      </button>
-                    )}
-
-                    {w.status === 'PAID' && (
-                      <span className="text-[11px] text-gray-400">Complete</span>
-                    )}
-
-                    {w.status === 'REJECTED' && (
-                      <span className="text-[11px] text-rose-400">Refunded</span>
-                    )}
-                  </div>
-                </td>
-              </tr>
+        {activeTab === 'REQUESTS' && (
+          <div className="flex items-center bg-[#0D121C] border border-[#232D3F] rounded-xl p-1 text-xs overflow-x-auto">
+            {['ALL', 'PENDING', 'APPROVED', 'PROCESSING', 'PAID', 'REJECTED'].map((st) => (
+              <button
+                key={st}
+                onClick={() => setFilter(st)}
+                className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors ${
+                  filter === st
+                    ? 'bg-purple-500/20 text-purple-300'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                {st}
+              </button>
             ))}
-          </tbody>
-        </table>
+          </div>
+        )}
       </div>
+
+      {/* Tab 1: Linked Bank & UPI Accounts */}
+      {activeTab === 'PROFILES' && (
+        <div className="bg-[#151B26] border border-[#232D3F] rounded-2xl p-6 shadow-xl overflow-x-auto">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-emerald-400" />
+                <span>Connected Payment Profiles ({filteredPayoutProfiles.length})</span>
+              </h3>
+              <p className="text-xs text-gray-400">
+                Live registry of all publisher bank accounts, UPI VPAs, and wallets configured for payouts.
+              </p>
+            </div>
+          </div>
+
+          {filteredPayoutProfiles.length === 0 ? (
+            <div className="p-12 text-center text-gray-400 text-xs">
+              <Building2 className="w-12 h-12 mx-auto mb-3 text-gray-600" />
+              <p>No publishers have linked a Bank or UPI account yet.</p>
+              <p className="text-gray-500 text-[11px] mt-1">
+                As soon as any user links their UPI ID or Bank Account, it will immediately show up here.
+              </p>
+            </div>
+          ) : (
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-[#232D3F] text-gray-400 uppercase text-[10px] tracking-wider">
+                  <th className="pb-3 font-semibold">Publisher</th>
+                  <th className="pb-3 font-semibold">Method</th>
+                  <th className="pb-3 font-semibold">Destination / UPI ID</th>
+                  <th className="pb-3 font-semibold">Account Holder</th>
+                  <th className="pb-3 font-semibold text-right">Available Bal</th>
+                  <th className="pb-3 font-semibold">Last Updated</th>
+                  <th className="pb-3 font-semibold text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#1E2638]">
+                {filteredPayoutProfiles.map((u) => {
+                  const p = u.parsedPayout;
+                  let destinationText = '';
+                  if (p.type === 'UPI') destinationText = `UPI ID: ${p.upiId || '—'}`;
+                  else if (p.type === 'BANK_TRANSFER')
+                    destinationText = `${p.bankName || 'Bank'} A/C: ${p.accountNumber || '—'} (IFSC: ${p.ifscCode || '—'})`;
+                  else if (p.type === 'CRYPTO_USDT')
+                    destinationText = `TRC20: ${p.usdtAddress || '—'}`;
+                  else if (p.type === 'PAYPAL') destinationText = `PayPal: ${p.paypalEmail || '—'}`;
+                  else if (p.type === 'EASYPAISA' || p.type === 'JAZZCASH')
+                    destinationText = `${p.type}: ${p.walletNumber || '—'}`;
+                  else destinationText = p.accountNumber || p.accountHolder || '—';
+
+                  const copyValue = p.type === 'UPI' ? p.upiId : p.accountNumber || destinationText;
+
+                  return (
+                    <tr key={u.id} className="hover:bg-[#111622] transition-colors">
+                      <td className="py-3.5">
+                        <div className="font-semibold text-white">{u.name}</div>
+                        <div className="text-[11px] text-gray-400">{u.email}</div>
+                      </td>
+                      <td className="py-3.5">
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                            p.type === 'UPI'
+                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                              : p.type === 'BANK_TRANSFER'
+                              ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                              : 'bg-purple-500/10 text-purple-400 border-purple-500/30'
+                          }`}
+                        >
+                          {p.type.replace(/_/g, ' ')}
+                        </span>
+                      </td>
+                      <td className="py-3.5">
+                        <div className="font-mono text-xs text-white font-medium">
+                          {destinationText}
+                        </div>
+                      </td>
+                      <td className="py-3.5 text-gray-300 font-medium">
+                        {p.accountHolder || '—'}
+                      </td>
+                      <td className="py-3.5 text-right font-mono font-bold text-emerald-400">
+                        {formatCurrency(u.availableBalance)}
+                      </td>
+                      <td className="py-3.5 text-gray-400 text-[11px] whitespace-nowrap">
+                        {p.updatedAt ? formatDateTime(p.updatedAt) : formatDate(u.updatedAt)}
+                      </td>
+                      <td className="py-3.5 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(copyValue || '', u.id)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#1E2638] hover:bg-[#283552] text-gray-200 text-[11px] font-semibold transition-colors"
+                        >
+                          {copiedId === u.id ? (
+                            <>
+                              <Check className="w-3 h-3 text-emerald-400" />
+                              <span className="text-emerald-400">Copied</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3 h-3" />
+                              <span>Copy</span>
+                            </>
+                          )}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
+      {/* Tab 2: Withdrawals Table */}
+      {activeTab === 'REQUESTS' && (
+        <div className="bg-[#151B26] border border-[#232D3F] rounded-2xl p-6 shadow-xl overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-[#232D3F] text-gray-400 uppercase text-[10px] tracking-wider">
+                <th className="pb-3 font-semibold">Request Date</th>
+                <th className="pb-3 font-semibold">Publisher</th>
+                <th className="pb-3 font-semibold">Method & Target Account</th>
+                <th className="pb-3 font-semibold text-right">Amount</th>
+                <th className="pb-3 font-semibold">Status</th>
+                <th className="pb-3 font-semibold">Admin Audit Note</th>
+                <th className="pb-3 font-semibold text-center">Manage</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#1E2638]">
+              {filteredWithdrawals.map((w) => (
+                <tr key={w.id} className="hover:bg-[#111622] transition-colors">
+                  <td className="py-3.5 text-gray-400 font-mono text-[11px] whitespace-nowrap">
+                    {formatDate(w.createdAt)}
+                  </td>
+                  <td className="py-3.5">
+                    <div className="font-semibold text-white">{w.user.name}</div>
+                    <div className="text-[11px] text-gray-400">{w.user.email}</div>
+                  </td>
+                  <td className="py-3.5">
+                    <span className="font-bold text-gray-200">{w.paymentMethod}</span>
+                    <div className="font-mono text-[11px] text-gray-400 max-w-xs truncate">
+                      {w.paymentDetails}
+                    </div>
+                  </td>
+                  <td className="py-3.5 text-right font-bold text-sm text-emerald-400">
+                    {formatCurrency(w.amount)}
+                  </td>
+                  <td className="py-3.5">{getStatusBadge(w.status)}</td>
+                  <td className="py-3.5 text-gray-400 italic max-w-xs truncate">
+                    {w.adminNote || '—'}
+                  </td>
+                  <td className="py-3.5 text-center">
+                    <div className="flex items-center justify-center gap-1.5">
+                      {w.status === 'PENDING' && (
+                        <>
+                          <button
+                            onClick={() => openActionModal(w, 'APPROVED')}
+                            className="px-2.5 py-1 rounded bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 text-[11px] font-semibold border border-blue-500/20"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => openActionModal(w, 'REJECTED')}
+                            className="px-2 py-1 rounded bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 text-[11px] font-semibold border border-rose-500/20"
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
+
+                      {w.status === 'APPROVED' && (
+                        <button
+                          onClick={() => openActionModal(w, 'PROCESSING')}
+                          className="px-2.5 py-1 rounded bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 text-[11px] font-semibold border border-purple-500/20"
+                        >
+                          Process
+                        </button>
+                      )}
+
+                      {w.status === 'PROCESSING' && (
+                        <button
+                          onClick={() => openActionModal(w, 'PAID')}
+                          className="px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-[11px] font-semibold border border-emerald-500/20"
+                        >
+                          Mark Paid
+                        </button>
+                      )}
+
+                      {w.status === 'PAID' && (
+                        <span className="text-[11px] text-gray-400">Complete</span>
+                      )}
+
+                      {w.status === 'REJECTED' && (
+                        <span className="text-[11px] text-rose-400">Refunded</span>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Action Dialog */}
       {activeModalItem && (
