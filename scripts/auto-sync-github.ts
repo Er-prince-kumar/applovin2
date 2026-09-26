@@ -17,12 +17,26 @@ const IGNORED_DIRS = new Set([
   '.gradle',
 ]);
 
-const IGNORED_EXTENSIONS = new Set([
-  '.db',
-  '.db-journal',
-  '.log',
-  '.tmp',
-  '.tsbuildinfo',
+const VALID_EXTENSIONS = new Set([
+  '.ts',
+  '.tsx',
+  '.js',
+  '.jsx',
+  '.mjs',
+  '.cjs',
+  '.css',
+  '.scss',
+  '.html',
+  '.json',
+  '.md',
+  '.svg',
+  '.png',
+  '.jpg',
+  '.webp',
+  '.ico',
+  '.xml',
+  '.gradle',
+  '.properties',
 ]);
 
 let changeTimeout: NodeJS.Timeout | null = null;
@@ -35,12 +49,26 @@ function shouldIgnore(filePath: string): boolean {
 
   for (const part of parts) {
     if (IGNORED_DIRS.has(part)) return true;
-    if (part.startsWith('.')) return true;
+    if (part.startsWith('.') && part !== '.env.example' && part !== '.gitignore') return true;
   }
 
-  const ext = path.extname(filePath);
-  if (IGNORED_EXTENSIONS.has(ext)) return true;
-  if (filePath.endsWith('dev.db') || filePath.endsWith('dev.db-journal')) return true;
+  // If path is a directory, don't trigger sync
+  try {
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+      return true;
+    }
+  } catch {
+    // File may have been deleted
+  }
+
+  const ext = path.extname(filePath).toLowerCase();
+  if (filePath.includes('dev.db') || filePath.includes('.db-journal') || filePath.includes('.db-wal')) {
+    return true;
+  }
+
+  if (!VALID_EXTENSIONS.has(ext) && !filePath.endsWith('.gitignore')) {
+    return true;
+  }
 
   return false;
 }

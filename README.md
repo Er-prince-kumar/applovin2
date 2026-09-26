@@ -233,12 +233,17 @@ npm run watch:github
 ### 3. Connect Your GitHub Repository (One-Time Setup)
 ```bash
 # Link your repository and push initial commit
-npm run git:remote -- https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+npm run git:remote -- https://github.com/Er-prince-kumar/applovin.git
 
 # Or standard Git command:
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+git remote add origin https://github.com/Er-prince-kumar/applovin.git
 git push -u origin main
 ```
+
+---
+
+## 🔗 Repository
+- **GitHub Repository**: [https://github.com/Er-prince-kumar/applovin](https://github.com/Er-prince-kumar/applovin)
 
 ---
 
