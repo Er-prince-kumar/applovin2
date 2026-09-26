@@ -72,68 +72,34 @@ export default function DownloadPage() {
             disbursements right from your Android or iOS mobile phone.
           </p>
 
-          {/* Download Action Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto text-left">
-            {/* 1-Tap Instant Phone Install Card (Recommended) */}
-            <div className="bg-[#151B26] border-2 border-emerald-500/50 rounded-2xl p-7 shadow-2xl relative overflow-hidden group">
-              <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/15 rounded-full blur-2xl group-hover:bg-emerald-500/25 transition-all" />
+          {/* 1-Tap Instant Phone Install Card */}
+          <div className="max-w-2xl mx-auto text-left">
+            <div className="bg-[#151B26] border-2 border-emerald-500/50 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden group">
+              <div className="absolute -top-16 -right-16 w-48 h-48 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
 
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
-                  <Smartphone className="w-6 h-6" />
+              <div className="flex items-center justify-between mb-6">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                  <Smartphone className="w-8 h-8" />
                 </div>
-                <span className="px-3 py-1 rounded-full text-[10px] font-extrabold bg-emerald-500 text-gray-950 shadow-md">
-                  ★ RECOMMENDED
+                <span className="px-3.5 py-1 rounded-full text-xs font-extrabold bg-emerald-500 text-gray-950 shadow-md">
+                  ★ INSTANT INSTALL
                 </span>
               </div>
 
-              <h3 className="text-xl font-bold text-white mb-1">Direct Phone Install</h3>
-              <p className="text-xs text-gray-400 mb-5">
-                Instantly install the full LinkEarn app with bottom navigation directly to your phone screen with 0 download errors.
+              <h3 className="text-2xl font-bold text-white mb-2">Install App Directly to Phone</h3>
+              <p className="text-sm text-gray-400 mb-6 leading-relaxed">
+                Add LinkEarn to your Android or iPhone home screen with one tap. Enjoy full-screen performance, bottom tabs, live earnings updates, and zero parsing or file errors.
               </p>
 
               {/* Client Component with Native Install Prompt Hook */}
               <DownloadClientSection />
 
-              <div className="mt-4 pt-3 border-t border-[#1E2638] flex flex-wrap items-center gap-3 text-[11px] text-gray-400">
-                <span className="flex items-center gap-1 text-emerald-400 font-semibold">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  Zero Parsing Errors
+              <div className="mt-6 pt-5 border-t border-[#1E2638] flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
+                <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+                  <ShieldCheck className="w-4 h-4" />
+                  100% Error-Free Native Install
                 </span>
-                <span>&bull;</span>
-                <span>Works on All Android & iOS</span>
-              </div>
-            </div>
-
-            {/* Android APK Package Card */}
-            <div className="bg-[#151B26] border border-[#232D3F] rounded-2xl p-7 shadow-2xl relative overflow-hidden group">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
-                  <Download className="w-6 h-6" />
-                </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#1E2638] text-gray-300 border border-[#2E3C56]">
-                  v1.0.0 APK
-                </span>
-              </div>
-
-              <h3 className="text-xl font-bold text-white mb-1">Android APK Archive</h3>
-              <p className="text-xs text-gray-400 mb-6">
-                Manual installer archive. If your phone security blocks installation with &quot;problem parsing package&quot;, use the Direct Phone Install on the left.
-              </p>
-
-              {/* Direct Download Button */}
-              <a
-                href="/api/download/apk"
-                download="LinkEarn-Publisher-v1.0.0.apk"
-                className="w-full py-3.5 px-5 rounded-xl bg-[#1E2638] hover:bg-[#28354c] text-white font-bold text-sm transition-all border border-[#2E3C56] flex items-center justify-center gap-2 mb-4 hover:scale-[1.01]"
-              >
-                <Download className="w-5 h-5 text-emerald-400" />
-                <span>Download Raw APK File</span>
-              </a>
-
-              <div className="mt-4 pt-4 border-t border-[#1E2638] text-[11px] text-gray-400 space-y-1">
-                <div className="font-semibold text-gray-300">GitHub Actions Build:</div>
-                <div>Automated cloud APK builds are triggered on <strong className="text-emerald-400">every commit</strong> in your GitHub repository.</div>
+                <span>Works on All Android & iOS Phones</span>
               </div>
             </div>
           </div>
