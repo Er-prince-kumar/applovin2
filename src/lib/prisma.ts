@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -18,13 +19,20 @@ function getDatabaseUrl(): string {
   const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 
   if (isServerless) {
-    const tmpDbPath = '/tmp/dev.db';
+    // On Linux/Vercel /tmp is always available; otherwise use system os.tmpdir()
+    const tmpDir = process.platform === 'win32' ? os.tmpdir() : '/tmp';
+    const tmpDbPath = path.join(tmpDir, 'dev.db');
+
     try {
+      if (!fs.existsSync(tmpDir)) {
+        fs.mkdirSync(tmpDir, { recursive: true });
+      }
+
       if (!fs.existsSync(tmpDbPath)) {
         const candidatePaths = [
           path.join(process.cwd(), 'prisma', 'dev.db'),
-          path.join(__dirname, '..', '..', '..', 'prisma', 'dev.db'),
           path.join('/var/task', 'prisma', 'dev.db'),
+          path.resolve('prisma/dev.db'),
         ];
 
         let copied = false;
@@ -41,13 +49,13 @@ function getDatabaseUrl(): string {
         }
       }
     } catch (err) {
-      console.warn('Notice: Serverless /tmp database setup:', err);
+      console.warn('Notice: Serverless database setup:', err);
     }
 
-    return `file:${tmpDbPath}`;
+    return `file:${tmpDbPath.replace(/\\/g, '/')}`;
   }
 
-  // Local development / server environment
+  // Local development / desktop server environment
   const localDbPath = path.resolve(process.cwd(), 'prisma', 'dev.db');
   return `file:${localDbPath.replace(/\\/g, '/')}`;
 }
