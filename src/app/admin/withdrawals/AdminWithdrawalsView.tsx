@@ -12,25 +12,36 @@ import {
   ArrowRight,
   ShieldCheck,
   Send,
+  Building2,
+  CreditCard,
+  Copy,
+  Check,
+  Smartphone,
 } from 'lucide-react';
 import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 
 interface AdminWithdrawalsViewProps {
   initialWithdrawals: any[];
+  usersWithPayout?: any[];
 }
 
-export default function AdminWithdrawalsView({ initialWithdrawals }: AdminWithdrawalsViewProps) {
+export default function AdminWithdrawalsView({
+  initialWithdrawals,
+  usersWithPayout = [],
+}: AdminWithdrawalsViewProps) {
   const [withdrawals, setWithdrawals] = useState<any[]>(initialWithdrawals);
+  const [activeTab, setActiveTab] = useState<'PROFILES' | 'REQUESTS'>('PROFILES');
   const [filter, setFilter] = useState('ALL');
   const [search, setSearch] = useState('');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [activeModalItem, setActiveModalItem] = useState<any | null>(null);
   const [actionStatus, setActionStatus] = useState<string>('APPROVED');
   const [adminNote, setAdminNote] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const filtered = withdrawals.filter((w) => {
+  const filteredWithdrawals = withdrawals.filter((w) => {
     const matchesFilter = filter === 'ALL' || w.status === filter;
     const matchesSearch =
       w.user.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -40,6 +51,38 @@ export default function AdminWithdrawalsView({ initialWithdrawals }: AdminWithdr
 
     return matchesFilter && matchesSearch;
   });
+
+  const parsedUsersWithPayout = usersWithPayout.map((u) => {
+    let details: any = null;
+    if (u.payoutDetails) {
+      try {
+        details = JSON.parse(u.payoutDetails);
+      } catch {
+        details = null;
+      }
+    }
+    return { ...u, parsedPayout: details };
+  });
+
+  const filteredPayoutProfiles = parsedUsersWithPayout.filter((u) => {
+    if (!u.parsedPayout) return false;
+    const q = search.toLowerCase();
+    const nameMatch = u.name.toLowerCase().includes(q);
+    const emailMatch = u.email.toLowerCase().includes(q);
+    const typeMatch = (u.parsedPayout.type || '').toLowerCase().includes(q);
+    const upiMatch = (u.parsedPayout.upiId || '').toLowerCase().includes(q);
+    const bankMatch = (u.parsedPayout.bankName || '').toLowerCase().includes(q);
+    const accMatch = (u.parsedPayout.accountNumber || '').toLowerCase().includes(q);
+
+    return nameMatch || emailMatch || typeMatch || upiMatch || bankMatch || accMatch;
+  });
+
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    toast('Copied to clipboard!', 'success');
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   const openActionModal = (item: any, defaultNext: string) => {
     setActiveModalItem(item);
