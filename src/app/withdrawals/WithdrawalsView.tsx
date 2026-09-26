@@ -25,8 +25,6 @@ import StatCard from '@/components/ui/StatCard';
 import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 
-export const SAVED_BANK_STORAGE_KEY = 'linkearn_saved_bank_details';
-
 export interface PayoutMethodData {
   type:
     | 'BANK_TRANSFER'
@@ -223,7 +221,7 @@ export default function WithdrawalsView({
       setSavedMethod(null);
       setUseSavedMethod(false);
       try {
-        localStorage.removeItem(SAVED_BANK_STORAGE_KEY);
+        localStorage.removeItem(userStorageKey);
       } catch {}
 
       router.refresh();
@@ -296,7 +294,7 @@ export default function WithdrawalsView({
 
       // Persist in localStorage to ensure instantaneous rendering on page reload/PWA resume
       try {
-        localStorage.setItem(SAVED_BANK_STORAGE_KEY, JSON.stringify(payload));
+        localStorage.setItem(userStorageKey, JSON.stringify(payload));
       } catch {}
 
       // Refresh server component to invalidate RSC payload cache
@@ -444,7 +442,7 @@ export default function WithdrawalsView({
         setSavedMethod(structuredPayload);
         setUseSavedMethod(true);
         try {
-          localStorage.setItem(SAVED_BANK_STORAGE_KEY, JSON.stringify(structuredPayload));
+          localStorage.setItem(userStorageKey, JSON.stringify(structuredPayload));
         } catch {}
         router.refresh();
       }
