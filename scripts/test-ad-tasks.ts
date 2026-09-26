@@ -6,11 +6,11 @@ async function testAdTasks() {
 
   // Find or create a test user
   let user = await prisma.user.findUnique({
-    where: { email: 'demo@publisher.com' },
+    where: { email: 'publisher@linkearn.com' },
   });
 
   if (!user) {
-    throw new Error('demo@publisher.com not found');
+    throw new Error('publisher@linkearn.com not found');
   }
 
   const initialBalance = user.availableBalance;
