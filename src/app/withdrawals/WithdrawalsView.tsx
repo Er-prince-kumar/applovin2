@@ -428,6 +428,10 @@ export default function WithdrawalsView({
       if (saveAsDefault && structuredPayload) {
         setSavedMethod(structuredPayload);
         setUseSavedMethod(true);
+        try {
+          localStorage.setItem(SAVED_BANK_STORAGE_KEY, JSON.stringify(structuredPayload));
+        } catch {}
+        router.refresh();
       }
 
       toast('Withdrawal request submitted for review!', 'success');
