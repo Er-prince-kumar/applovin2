@@ -78,16 +78,15 @@ export default function Topbar({
           </button>
         )}
 
-        {/* Download App (APK) Shortcut */}
-        <a
-          href="/api/download/apk"
-          download="LinkEarn-Publisher-v1.0.0.apk"
+        {/* Install Mobile App Shortcut */}
+        <Link
+          href="/download"
           className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#141d2d] hover:bg-[#1c2940] border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 font-semibold text-xs transition-colors shadow-sm"
-          title="Download LinkEarn Android APK"
+          title="Install LinkEarn Mobile App"
         >
-          <Download className="w-3.5 h-3.5" />
-          <span>Get APK</span>
-        </a>
+          <Smartphone className="w-3.5 h-3.5" />
+          <span>Mobile App</span>
+        </Link>
 
         {/* Quick Link Creation */}
         <Link
