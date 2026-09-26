@@ -152,10 +152,10 @@ export default function DownloadPage() {
         </div>
       </section>
 
-      {/* 3-Step Installation Guide */}
+      {/* 3-Step Phone Installation Guide */}
       <section className="py-16 max-w-4xl mx-auto px-6">
         <h3 className="text-2xl font-bold text-white text-center mb-8">
-          Android APK Installation in 3 Steps
+          Install on Your Phone in 3 Simple Steps
         </h3>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -163,9 +163,9 @@ export default function DownloadPage() {
             <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center mx-auto mb-3">
               1
             </div>
-            <h4 className="text-sm font-bold text-white mb-1">Download APK</h4>
+            <h4 className="text-sm font-bold text-white mb-1">Open in Browser</h4>
             <p className="text-xs text-gray-400 leading-relaxed">
-              Tap the &quot;Download Android APK&quot; button above to save <strong className="text-gray-300">LinkEarn-Publisher-v1.0.0.apk</strong> to your device.
+              Open LinkEarn in <strong className="text-gray-200">Google Chrome</strong> (Android) or <strong className="text-gray-200">Safari</strong> (iPhone).
             </p>
           </div>
 
@@ -173,9 +173,9 @@ export default function DownloadPage() {
             <div className="w-10 h-10 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 font-bold flex items-center justify-center mx-auto mb-3">
               2
             </div>
-            <h4 className="text-sm font-bold text-white mb-1">Confirm Install</h4>
+            <h4 className="text-sm font-bold text-white mb-1">Tap Install App</h4>
             <p className="text-xs text-gray-400 leading-relaxed">
-              Open your browser downloads, tap the APK file, and click &quot;Install&quot; (enable &quot;Allow from this source&quot; if prompted).
+              Tap the green &quot;Install App to Phone&quot; button above, or tap the <strong className="text-gray-200">3 dots (⋮)</strong> in Chrome and tap <strong className="text-emerald-400">&quot;Install app&quot;</strong>.
             </p>
           </div>
 
@@ -183,9 +183,9 @@ export default function DownloadPage() {
             <div className="w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 font-bold flex items-center justify-center mx-auto mb-3">
               3
             </div>
-            <h4 className="text-sm font-bold text-white mb-1">Start Monetizing</h4>
+            <h4 className="text-sm font-bold text-white mb-1">Launch from Home Screen</h4>
             <p className="text-xs text-gray-400 leading-relaxed">
-              Launch LinkEarn from your phone apps screen, sign in with your credentials, and monitor your traffic live!
+              The official LinkEarn icon appears on your home screen and app drawer. Tap to open in full-screen mode!
             </p>
           </div>
         </div>
