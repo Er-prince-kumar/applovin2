@@ -36,7 +36,7 @@ export async function createSessionToken(payload: AuthSessionPayload): Promise<s
   return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('7d')
+    .setExpirationTime('30d')
     .sign(JWT_SECRET);
 }
 
@@ -55,7 +55,7 @@ export async function setSessionCookie(token: string) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60, // 7 days
+    maxAge: 30 * 24 * 60 * 60, // 30 days permanent login session
     path: '/',
   });
 }
