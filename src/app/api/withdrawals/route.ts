@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { amount, paymentMethod, paymentDetails, notes } = result.data;
+    const { amount, paymentMethod, paymentDetails, saveAsDefault, structuredDetails, notes } = result.data;
 
     // Check minimum threshold
     const minSetting = await prisma.platformSetting.findUnique({
