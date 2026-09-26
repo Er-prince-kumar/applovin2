@@ -127,7 +127,7 @@ export default async function LandingPage() {
               className="w-full sm:w-auto px-7 py-4 rounded-xl bg-[#151B26] hover:bg-[#1E2638] text-emerald-400 border border-emerald-500/30 hover:border-emerald-500/60 font-bold text-base transition-all flex items-center justify-center gap-2.5 shadow-lg group"
             >
               <Smartphone className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
-              <span>Download App (APK)</span>
+              <span>Install Mobile App</span>
             </Link>
             <Link
               href="/login"
