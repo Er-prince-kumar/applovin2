@@ -53,7 +53,7 @@ export async function setSessionCookie(token: string) {
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: false, // Ensures cookies are never dropped on HTTP tunnels or localhost
     sameSite: 'lax',
     maxAge: 30 * 24 * 60 * 60, // 30 days permanent login session
     path: '/',
