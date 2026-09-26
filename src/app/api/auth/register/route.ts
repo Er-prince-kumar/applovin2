@@ -18,9 +18,17 @@ const registerSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const result = registerSchema.safeParse(body);
+    let body: any;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid JSON request format' },
+        { status: 400 }
+      );
+    }
 
+    const result = registerSchema.safeParse(body);
     if (!result.success) {
       return NextResponse.json(
         { error: result.error.issues[0]?.message || 'Invalid registration data' },
@@ -31,41 +39,44 @@ export async function POST(request: NextRequest) {
     const { name, email, password, referralCode } = result.data;
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Check existing email
+    // Check if user already exists
     const existing = await prisma.user.findUnique({
       where: { email: normalizedEmail },
     });
 
     if (existing) {
       return NextResponse.json(
-        { error: 'An account with this email address already exists' },
+        { error: 'An account with this email address already exists. Please log in.' },
         { status: 409 }
       );
     }
 
     // Check referral code if provided
     let referrerId: string | null = null;
-    if (referralCode && referralCode.trim() !== '') {
+    if (referralCode && typeof referralCode === 'string' && referralCode.trim() !== '') {
+      const cleanRefCode = referralCode.trim().toUpperCase();
       const referrer = await prisma.user.findUnique({
-        where: { referralCode: referralCode.trim().toUpperCase() },
+        where: { referralCode: cleanRefCode },
       });
       if (referrer) {
         referrerId = referrer.id;
       }
     }
 
-    // Generate unique referral code for the new user
+    // Generate unique referral code for the new user (with safety loop)
     let userReferralCode = generateReferralCode();
-    let collision = await prisma.user.findUnique({ where: { referralCode: userReferralCode } });
-    while (collision) {
+    let attempts = 0;
+    while (attempts < 10) {
+      const collision = await prisma.user.findUnique({ where: { referralCode: userReferralCode } });
+      if (!collision) break;
       userReferralCode = generateReferralCode();
-      collision = await prisma.user.findUnique({ where: { referralCode: userReferralCode } });
+      attempts++;
     }
 
     // Hash password
     const passwordHash = await hashPassword(password);
 
-    // Create user
+    // Create user in database
     const newUser = await prisma.user.create({
       data: {
         name: name.trim(),
@@ -80,25 +91,35 @@ export async function POST(request: NextRequest) {
 
     // Create Referral relationship record if referred
     if (referrerId) {
-      await prisma.referral.create({
-        data: {
-          referrerId,
-          referredUserId: newUser.id,
-          status: 'ACTIVE',
-        },
-      });
+      try {
+        await prisma.referral.create({
+          data: {
+            referrerId,
+            referredUserId: newUser.id,
+            status: 'ACTIVE',
+          },
+        });
+      } catch (refErr) {
+        console.warn('Non-critical referral record creation notice:', refErr);
+      }
     }
 
-    // Create session token and set cookie
+    // Create JWT session token
     const token = await createSessionToken({
       userId: newUser.id,
       email: newUser.email,
       role: newUser.role,
     });
 
-    await setSessionCookie(token);
+    // Try standard cookie store
+    try {
+      await setSessionCookie(token);
+    } catch (cookieErr) {
+      console.warn('Cookie store fallback triggered:', cookieErr);
+    }
 
-    return NextResponse.json(
+    // Prepare JSON response
+    const response = NextResponse.json(
       {
         success: true,
         user: {
@@ -111,11 +132,40 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error) {
-    console.error('Registration error:', error);
-    return NextResponse.json(
-      { error: 'An unexpected error occurred during registration' },
-      { status: 500 }
-    );
+
+    // Explicitly set cookie on NextResponse headers for 100% reliability
+    response.cookies.set('linkearn_session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: '/',
+    });
+
+    return response;
+  } catch (error: any) {
+    console.error('Registration error details:', error);
+
+    // Prisma Unique Constraint check (P2002)
+    if (error?.code === 'P2002') {
+      const target = error?.meta?.target;
+      if (Array.isArray(target) && target.includes('email')) {
+        return NextResponse.json(
+          { error: 'An account with this email address already exists. Please log in.' },
+          { status: 409 }
+        );
+      }
+      return NextResponse.json(
+        { error: 'An account with these details already exists. Please try another email.' },
+        { status: 409 }
+      );
+    }
+
+    const message =
+      error?.message && typeof error.message === 'string'
+        ? error.message
+        : 'Could not create account. Please verify your details and try again.';
+
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

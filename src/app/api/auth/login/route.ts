@@ -10,9 +10,17 @@ const loginSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const result = loginSchema.safeParse(body);
+    let body: any;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid JSON request format' },
+        { status: 400 }
+      );
+    }
 
+    const result = loginSchema.safeParse(body);
     if (!result.success) {
       return NextResponse.json(
         { error: result.error.issues[0]?.message || 'Invalid credentials' },
@@ -56,9 +64,13 @@ export async function POST(request: NextRequest) {
       role: user.role,
     });
 
-    await setSessionCookie(token);
+    try {
+      await setSessionCookie(token);
+    } catch (cookieErr) {
+      console.warn('Cookie store fallback triggered in login:', cookieErr);
+    }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       user: {
         id: user.id,
@@ -68,11 +80,22 @@ export async function POST(request: NextRequest) {
         referralCode: user.referralCode,
       },
     });
-  } catch (error) {
+
+    response.cookies.set('linkearn_session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: '/',
+    });
+
+    return response;
+  } catch (error: any) {
     console.error('Login error:', error);
-    return NextResponse.json(
-      { error: 'An unexpected error occurred during login' },
-      { status: 500 }
-    );
+    const message =
+      error?.message && typeof error.message === 'string'
+        ? error.message
+        : 'An error occurred during login. Please try again.';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
