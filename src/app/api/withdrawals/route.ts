@@ -5,8 +5,19 @@ import { getCurrentUser } from '@/lib/auth';
 
 const withdrawalRequestSchema = z.object({
   amount: z.number().positive('Withdrawal amount must be greater than 0'),
-  paymentMethod: z.enum(['PAYPAL', 'WIRE_TRANSFER', 'CRYPTO_USDT', 'PAYONEER']),
-  paymentDetails: z.string().min(3, 'Please provide valid payout details (e.g. email or wallet)'),
+  paymentMethod: z.enum([
+    'BANK_TRANSFER',
+    'UPI',
+    'WIRE_TRANSFER',
+    'PAYPAL',
+    'CRYPTO_USDT',
+    'PAYONEER',
+    'EASYPAISA',
+    'JAZZCASH',
+  ]),
+  paymentDetails: z.string().min(3, 'Please provide valid payout details'),
+  saveAsDefault: z.boolean().optional(),
+  structuredDetails: z.record(z.any()).optional(),
   notes: z.string().optional().nullable(),
 });
 
@@ -17,7 +28,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const [withdrawals, setting] = await Promise.all([
+    const [withdrawals, setting, userData] = await Promise.all([
       prisma.withdrawal.findMany({
         where: { userId: user.id },
         orderBy: { createdAt: 'desc' },
@@ -25,13 +36,19 @@ export async function GET() {
       prisma.platformSetting.findUnique({
         where: { key: 'MIN_WITHDRAWAL_AMOUNT' },
       }),
+      prisma.user.findUnique({
+        where: { id: user.id },
+        select: { payoutDetails: true },
+      }),
     ]);
 
     const minAmount = setting ? parseFloat(setting.value) : 10.0;
+    const parsedPayoutDetails = userData?.payoutDetails ? JSON.parse(userData.payoutDetails) : null;
 
     return NextResponse.json({
       withdrawals,
       minWithdrawal: minAmount,
+      savedPayoutMethod: parsedPayoutDetails,
       balances: {
         available: user.availableBalance,
         pending: user.pendingBalance,
