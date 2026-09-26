@@ -188,6 +188,77 @@ export default function ProfileView({ user }: ProfileViewProps) {
         </form>
       </div>
 
+      {/* Linked Bank / Payout Method Card */}
+      <div className="bg-[#151B26] border border-[#232D3F] rounded-2xl p-6 shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 shadow-inner">
+              <Building2 className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-base font-bold text-white">Linked Bank & Payout Method</h3>
+                {bankInfo ? (
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold">
+                    Connected
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[10px] font-bold">
+                    Not Configured
+                  </span>
+                )}
+              </div>
+
+              {bankInfo ? (
+                <div className="text-xs text-gray-300 space-y-1 mt-1">
+                  {bankInfo.type === 'BANK_TRANSFER' && (
+                    <p>
+                      Bank: <strong className="text-white">{bankInfo.bankName}</strong> &bull; A/C:{' '}
+                      <span className="font-mono text-emerald-400">••••{bankInfo.accountNumber?.slice(-4)}</span> &bull; IFSC:{' '}
+                      <span className="font-mono text-gray-200">{bankInfo.ifscCode}</span>
+                    </p>
+                  )}
+                  {bankInfo.type === 'UPI' && (
+                    <p>
+                      UPI ID: <strong className="font-mono text-emerald-400">{bankInfo.upiId}</strong> &bull; Name:{' '}
+                      <strong className="text-white">{bankInfo.accountHolder}</strong>
+                    </p>
+                  )}
+                  {(bankInfo.type === 'EASYPAISA' || bankInfo.type === 'JAZZCASH') && (
+                    <p>
+                      {bankInfo.type}: <strong className="font-mono text-emerald-400">{bankInfo.walletNumber}</strong> &bull; Name:{' '}
+                      <strong className="text-white">{bankInfo.accountHolder}</strong>
+                    </p>
+                  )}
+                  {bankInfo.type === 'PAYPAL' && (
+                    <p>
+                      PayPal: <strong className="text-blue-400">{bankInfo.paypalEmail}</strong>
+                    </p>
+                  )}
+                  {bankInfo.type === 'CRYPTO_USDT' && (
+                    <p>
+                      USDT TRC20: <span className="font-mono text-emerald-400">{bankInfo.usdtAddress}</span>
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400">
+                  Link your Bank Account or UPI ID to receive instant direct ad revenue payouts.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <Link
+            href="/withdrawals"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1d263b] hover:bg-[#283552] border border-[#2b3a5b] text-white font-semibold text-xs transition-all shrink-0"
+          >
+            <span>{bankInfo ? 'Manage Bank Account' : 'Add Bank Account'}</span>
+            <ArrowRight className="w-3.5 h-3.5 text-emerald-400" />
+          </Link>
+        </div>
+      </div>
+
       {/* Change Password Card */}
       <div className="bg-[#151B26] border border-[#232D3F] rounded-2xl p-6 shadow-xl">
         <div className="flex items-center gap-2.5 mb-2">
