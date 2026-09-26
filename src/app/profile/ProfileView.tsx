@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { User, Mail, Lock, ShieldCheck, Key, Check, AlertCircle, Save, Eye, EyeOff } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { User, Mail, Lock, ShieldCheck, Key, Check, AlertCircle, Save, Eye, EyeOff, Building2, ArrowRight } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 import { validatePassword } from '@/lib/password';
@@ -14,6 +15,7 @@ interface ProfileViewProps {
     email: string;
     role: string;
     referralCode: string;
+    payoutDetails?: string | null;
     createdAt: string | Date;
   };
 }
@@ -22,6 +24,31 @@ export default function ProfileView({ user }: ProfileViewProps) {
   const { toast } = useToast();
   const [name, setName] = useState(user.name);
   const [savingName, setSavingName] = useState(false);
+  const [bankInfo, setBankInfo] = useState<any>(() => {
+    if (user.payoutDetails) {
+      try {
+        return JSON.parse(user.payoutDetails);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    async function loadBank() {
+      try {
+        const res = await fetch('/api/user/payout-method', { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.payoutDetails) {
+            setBankInfo(data.payoutDetails);
+          }
+        }
+      } catch {}
+    }
+    loadBank();
+  }, []);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
