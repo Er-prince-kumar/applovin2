@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
     // Explicitly set cookie on NextResponse headers for 100% reliability
     response.cookies.set('linkearn_session', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Compatible with localhost, HTTP tunnels, and HTTPS
       sameSite: 'lax',
       maxAge: 30 * 24 * 60 * 60, // 30 days permanent login session
       path: '/',
