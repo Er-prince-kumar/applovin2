@@ -210,5 +210,37 @@ cd android
 
 ---
 
+## ⚡ Automatic Live Code & GitHub Sync
+
+Any changes you make to the code can be automatically updated in the live app and automatically committed and pushed to your GitHub repository:
+
+### 1. Live Instant App Updates (Fast Refresh)
+Run the development server:
+```bash
+npm run dev
+```
+- Edits made to any component, page, or style immediately update in the browser and mobile app via **Next.js Fast Refresh** with zero reload time.
+
+### 2. Automatic GitHub Upload Watcher
+Start the automatic GitHub background sync watcher:
+```bash
+npm run watch:github
+```
+- **Automatic detection**: Detects whenever you save any file.
+- **Automatic commit**: Batches changes and creates an atomic Git commit with a timestamp.
+- **Automatic GitHub push**: As soon as your GitHub remote is set, pushes commits directly to your GitHub repository in the background.
+
+### 3. Connect Your GitHub Repository (One-Time Setup)
+```bash
+# Link your repository and push initial commit
+npm run git:remote -- https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+
+# Or standard Git command:
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+git push -u origin main
+```
+
+---
+
 ## 📄 License
 MIT License. Built for performance affiliate link monetization.
