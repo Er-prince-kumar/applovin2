@@ -11,6 +11,7 @@ import {
   ExternalLink,
   Download,
   Smartphone,
+  Play,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 
