@@ -18,6 +18,9 @@ import {
   LogOut,
   X,
   ShieldCheck,
+  Play,
+  Cpu,
+  Smartphone,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
@@ -35,12 +38,15 @@ interface MobileNavProps {
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/tasks', label: 'Ad Tasks & Rewards', icon: Play, adHighlight: true },
+  { href: '/ad-network', label: 'Ad Networks & SDK', icon: Cpu },
   { href: '/links', label: 'My Links', icon: Link2 },
   { href: '/links/create', label: 'Create Link', icon: PlusCircle, highlight: true },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/earnings', label: 'Earnings & Ledger', icon: DollarSign },
   { href: '/withdrawals', label: 'Withdrawals', icon: Wallet },
   { href: '/referrals', label: 'Referrals', icon: Users2 },
+  { href: '/download', label: 'Mobile App', icon: Smartphone },
   { href: '/profile', label: 'Profile', icon: User },
   { href: '/settings', label: 'Settings', icon: Settings },
   { href: '/support', label: 'Support & FAQ', icon: HelpCircle },
