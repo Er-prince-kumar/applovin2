@@ -317,35 +317,33 @@ export default async function LandingPage() {
               </h3>
 
               <p className="text-sm sm:text-base text-gray-400 mb-8 leading-relaxed">
-                Download the official LinkEarn Android APK directly to your phone. Create links with one tap, inspect live click analytics, and request withdrawals from anywhere.
+                Install LinkEarn directly on your phone with one tap. Create links with one tap, inspect live click analytics, and request withdrawals from anywhere.
               </p>
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                <a
-                  href="/api/download/apk"
-                  download="LinkEarn-Publisher-v1.0.0.apk"
+                <Link
+                  href="/download"
                   className="px-6 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-sm transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2.5 hover:scale-[1.02]"
                 >
-                  <Download className="w-5 h-5" />
-                  <span>Download APK (v1.0.0)</span>
-                </a>
+                  <Smartphone className="w-5 h-5 text-gray-950 stroke-[2.5]" />
+                  <span>Install App on Phone</span>
+                </Link>
 
                 <Link
                   href="/download"
                   className="px-6 py-3.5 rounded-xl bg-[#1C2433] hover:bg-[#253044] text-white border border-[#2E3C56] font-semibold text-sm transition-colors flex items-center justify-center gap-2"
                 >
-                  <Smartphone className="w-4 h-4 text-emerald-400" />
-                  <span>Download Hub & iOS Guide</span>
+                  <span>Installation Guide</span>
                 </Link>
               </div>
 
               <div className="mt-6 flex flex-wrap items-center gap-4 text-xs text-gray-400">
                 <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
                   <ShieldCheck className="w-4 h-4" />
-                  Direct Download &bull; No App Store Account Needed
+                  Instant Install &bull; Works on Android & iOS
                 </span>
                 <span className="text-gray-600">&bull;</span>
-                <span>Android 8.0+ Compatible</span>
+                <span>Zero File Parsing Errors</span>
               </div>
             </div>
 
@@ -366,13 +364,12 @@ export default async function LandingPage() {
                   <div className="text-[10px] text-gray-400 uppercase">Verified Clicks</div>
                   <div className="text-base font-bold text-white mt-0.5">1,420</div>
                 </div>
-                <a
-                  href="/api/download/apk"
-                  download="LinkEarn-Publisher-v1.0.0.apk"
+                <Link
+                  href="/download"
                   className="block text-center py-2 bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs rounded-xl shadow-md transition-colors"
                 >
-                  Download App Now
-                </a>
+                  Install App Now
+                </Link>
               </div>
               <div className="w-28 h-1 bg-[#232D3F] rounded-full mx-auto mt-4" />
             </div>
