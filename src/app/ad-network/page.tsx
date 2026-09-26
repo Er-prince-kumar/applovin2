@@ -41,7 +41,11 @@ export default async function AdNetworkPage() {
   const config = setting ? { ...DEFAULT_CONFIG, ...JSON.parse(setting.value) } : DEFAULT_CONFIG;
 
   return (
-    <DashboardShell>
+    <DashboardShell
+      user={user}
+      title="Ad Networks & SDK Configuration"
+      subtitle="Configure Unity Ads, AppLovin MAX, and AdMob integration"
+    >
       <AdNetworkView initialConfig={config} />
     </DashboardShell>
   );
