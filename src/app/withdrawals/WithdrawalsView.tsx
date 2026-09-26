@@ -62,6 +62,7 @@ interface WithdrawalRecord {
 }
 
 interface WithdrawalsViewProps {
+  userId: string;
   initialWithdrawals: WithdrawalRecord[];
   availableBalance: number;
   pendingBalance: number;
@@ -72,6 +73,7 @@ interface WithdrawalsViewProps {
 }
 
 export default function WithdrawalsView({
+  userId,
   initialWithdrawals,
   availableBalance,
   pendingBalance,
@@ -81,6 +83,7 @@ export default function WithdrawalsView({
   initialPayoutMethod,
 }: WithdrawalsViewProps) {
   const router = useRouter();
+  const userStorageKey = `linkearn_saved_bank_${userId}`;
   const [withdrawals, setWithdrawals] = useState<WithdrawalRecord[]>(initialWithdrawals);
   const [available, setAvailable] = useState(availableBalance);
   const [pending, setPending] = useState(pendingBalance);
@@ -137,11 +140,16 @@ export default function WithdrawalsView({
 
   const { toast } = useToast();
 
-  // Persistent Hydration: Auto-sync bank account with localStorage and API on mount
+  // Persistent Hydration: Auto-sync bank account with user-scoped localStorage and API on mount
   useEffect(() => {
-    // 1. Instant fallback from localStorage
+    // 0. Remove legacy un-scoped storage key
     try {
-      const cached = localStorage.getItem(SAVED_BANK_STORAGE_KEY);
+      localStorage.removeItem('linkearn_saved_bank_details');
+    } catch {}
+
+    // 1. Instant fallback from user-specific localStorage
+    try {
+      const cached = localStorage.getItem(userStorageKey);
       if (cached) {
         const parsed = JSON.parse(cached);
         if (parsed && typeof parsed === 'object' && parsed.type) {
@@ -153,7 +161,7 @@ export default function WithdrawalsView({
       console.warn('Could not read cached bank details:', e);
     }
 
-    // 2. Fetch authoritative bank state from server
+    // 2. Fetch authoritative bank state from server for this logged-in user
     async function fetchPayoutMethod() {
       try {
         const res = await fetch('/api/user/payout-method', {
@@ -166,7 +174,14 @@ export default function WithdrawalsView({
             setSavedMethod(data.payoutDetails);
             setUseSavedMethod(true);
             try {
-              localStorage.setItem(SAVED_BANK_STORAGE_KEY, JSON.stringify(data.payoutDetails));
+              localStorage.setItem(userStorageKey, JSON.stringify(data.payoutDetails));
+            } catch {}
+          } else {
+            // User does not have any saved payout method yet
+            setSavedMethod(null);
+            setUseSavedMethod(false);
+            try {
+              localStorage.removeItem(userStorageKey);
             } catch {}
           }
         }
@@ -176,7 +191,7 @@ export default function WithdrawalsView({
     }
 
     fetchPayoutMethod();
-  }, []);
+  }, [userStorageKey]);
 
   // Synchronize form fields whenever savedMethod changes or modal opens
   const handleOpenBankModal = () => {
