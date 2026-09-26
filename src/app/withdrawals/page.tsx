@@ -43,6 +43,7 @@ export default async function WithdrawalsPage() {
       subtitle="Request disbursements of your earned balance and track real-time settlement status"
     >
       <WithdrawalsView
+        userId={user.id}
         initialWithdrawals={withdrawals}
         availableBalance={user.availableBalance}
         pendingBalance={user.pendingBalance}
