@@ -97,6 +97,26 @@ export default function SettingsView({ user }: { user: any }) {
         </button>
       </div>
 
+      {/* Bank Account & Payout Setup */}
+      <div className="bg-[#151B26] border border-[#232D3F] rounded-2xl p-6 shadow-xl">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-emerald-400" />
+            <h3 className="text-base font-bold text-white">Bank Account & Payout Setup</h3>
+          </div>
+          <Link
+            href="/withdrawals"
+            className="px-3.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-semibold text-xs flex items-center gap-1.5 transition-colors"
+          >
+            <span>Manage Bank Account</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+        <p className="text-xs text-gray-400">
+          Link your primary bank account (A/C No, Bank Name, IFSC code), UPI ID, or Mobile Wallets for fast automatic withdrawals.
+        </p>
+      </div>
+
       {/* Programmatic API Access */}
       <div className="bg-[#151B26] border border-[#232D3F] rounded-2xl p-6 shadow-xl">
         <div className="flex items-center gap-2 mb-2">
