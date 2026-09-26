@@ -17,7 +17,7 @@ const withdrawalRequestSchema = z.object({
   ]),
   paymentDetails: z.string().min(3, 'Please provide valid payout details'),
   saveAsDefault: z.boolean().optional(),
-  structuredDetails: z.record(z.any()).optional(),
+  structuredDetails: z.record(z.string(), z.any()).optional(),
   notes: z.string().optional().nullable(),
 });
 
