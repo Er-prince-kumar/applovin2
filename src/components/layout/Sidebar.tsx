@@ -92,15 +92,22 @@ export default function Sidebar({ user }: SidebarProps) {
               key={item.href}
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                item.highlight
+                item.adHighlight
+                  ? 'bg-gradient-to-r from-blue-500/15 via-indigo-500/10 to-transparent text-blue-300 border border-blue-500/30 hover:border-blue-400/50'
+                  : item.highlight
                   ? 'bg-gradient-to-r from-emerald-500/15 to-teal-500/10 text-emerald-300 border border-emerald-500/25 hover:border-emerald-500/40 hover:bg-emerald-500/20 my-2'
                   : isActive
                   ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                   : 'text-gray-400 hover:text-gray-200 hover:bg-[#151b26]'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive || item.highlight ? 'text-emerald-400' : 'text-gray-400'}`} />
+              <Icon className={`w-4 h-4 ${item.adHighlight ? 'text-blue-400 fill-blue-400/30' : isActive || item.highlight ? 'text-emerald-400' : 'text-gray-400'}`} />
               <span>{item.label}</span>
+              {item.adHighlight && (
+                <span className="ml-auto text-[10px] font-black px-1.5 py-0.5 rounded bg-gradient-to-r from-blue-600 to-indigo-600 text-white uppercase tracking-wider shadow-sm">
+                  Earn $
+                </span>
+              )}
             </Link>
           );
         })}
