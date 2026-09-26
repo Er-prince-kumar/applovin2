@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Wallet,
   Clock,
@@ -18,10 +19,13 @@ import {
   Check,
   Zap,
   Lock,
+  Trash2,
 } from 'lucide-react';
 import StatCard from '@/components/ui/StatCard';
 import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
+
+export const SAVED_BANK_STORAGE_KEY = 'linkearn_saved_bank_details';
 
 export interface PayoutMethodData {
   type:
@@ -76,6 +80,7 @@ export default function WithdrawalsView({
   minWithdrawal,
   initialPayoutMethod,
 }: WithdrawalsViewProps) {
+  const router = useRouter();
   const [withdrawals, setWithdrawals] = useState<WithdrawalRecord[]>(initialWithdrawals);
   const [available, setAvailable] = useState(availableBalance);
   const [pending, setPending] = useState(pendingBalance);
@@ -86,12 +91,13 @@ export default function WithdrawalsView({
   );
   const [showBankModal, setShowBankModal] = useState(false);
   const [savingBank, setSavingBank] = useState(false);
+  const [unlinkingBank, setUnlinkingBank] = useState(false);
   const [bankModalError, setBankModalError] = useState<string | null>(null);
 
   // Bank form state (for editing/adding bank account directly)
   const [bankFormType, setBankFormType] = useState<
     'BANK_TRANSFER' | 'UPI' | 'EASYPAISA' | 'JAZZCASH' | 'PAYPAL' | 'CRYPTO_USDT'
-  >(savedMethod?.type as any || 'BANK_TRANSFER');
+  >((savedMethod?.type as any) || 'BANK_TRANSFER');
   const [bankAccountHolder, setBankAccountHolder] = useState(savedMethod?.accountHolder || '');
   const [bankName, setBankName] = useState(savedMethod?.bankName || '');
   const [bankAccountNumber, setBankAccountNumber] = useState(savedMethod?.accountNumber || '');
@@ -130,6 +136,89 @@ export default function WithdrawalsView({
   const [error, setError] = useState<string | null>(null);
 
   const { toast } = useToast();
+
+  // Persistent Hydration: Auto-sync bank account with localStorage and API on mount
+  useEffect(() => {
+    // 1. Instant fallback from localStorage
+    try {
+      const cached = localStorage.getItem(SAVED_BANK_STORAGE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && typeof parsed === 'object' && parsed.type) {
+          setSavedMethod((current) => current || parsed);
+          setUseSavedMethod(true);
+        }
+      }
+    } catch (e) {
+      console.warn('Could not read cached bank details:', e);
+    }
+
+    // 2. Fetch authoritative bank state from server
+    async function fetchPayoutMethod() {
+      try {
+        const res = await fetch('/api/user/payout-method', {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.payoutDetails) {
+            setSavedMethod(data.payoutDetails);
+            setUseSavedMethod(true);
+            try {
+              localStorage.setItem(SAVED_BANK_STORAGE_KEY, JSON.stringify(data.payoutDetails));
+            } catch {}
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching payout method:', err);
+      }
+    }
+
+    fetchPayoutMethod();
+  }, []);
+
+  // Synchronize form fields whenever savedMethod changes or modal opens
+  const handleOpenBankModal = () => {
+    if (savedMethod) {
+      setBankFormType((savedMethod.type as any) || 'BANK_TRANSFER');
+      setBankAccountHolder(savedMethod.accountHolder || '');
+      setBankName(savedMethod.bankName || '');
+      setBankAccountNumber(savedMethod.accountNumber || '');
+      setBankConfirmAccountNumber(savedMethod.accountNumber || '');
+      setBankIfscCode(savedMethod.ifscCode || '');
+      setBankAccountType(savedMethod.accountType || 'Savings');
+      setBankUpiId(savedMethod.upiId || '');
+      setBankWalletNumber(savedMethod.walletNumber || '');
+      setBankPaypalEmail(savedMethod.paypalEmail || '');
+      setBankUsdtAddress(savedMethod.usdtAddress || '');
+    }
+    setBankModalError(null);
+    setShowBankModal(true);
+  };
+
+  // Handle Unlinking / Removing Saved Bank Account
+  async function handleUnlinkBank() {
+    if (!confirm('Are you sure you want to remove your saved bank account?')) return;
+    setUnlinkingBank(true);
+    try {
+      const res = await fetch('/api/user/payout-method', { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to unlink bank account');
+
+      setSavedMethod(null);
+      setUseSavedMethod(false);
+      try {
+        localStorage.removeItem(SAVED_BANK_STORAGE_KEY);
+      } catch {}
+
+      router.refresh();
+      toast('Bank account unlinked successfully', 'info');
+    } catch (err: any) {
+      toast(err.message || 'Error unlinking bank account', 'error');
+    } finally {
+      setUnlinkingBank(false);
+    }
+  }
 
   // Handle Save / Update Bank Account Modal
   async function handleSaveBankAccount(e: React.FormEvent) {
@@ -189,7 +278,16 @@ export default function WithdrawalsView({
       setSavedMethod(payload);
       setUseSavedMethod(true);
       setShowBankModal(false);
-      toast('Bank account linked successfully!', 'success');
+
+      // Persist in localStorage to ensure instantaneous rendering on page reload/PWA resume
+      try {
+        localStorage.setItem(SAVED_BANK_STORAGE_KEY, JSON.stringify(payload));
+      } catch {}
+
+      // Refresh server component to invalidate RSC payload cache
+      router.refresh();
+
+      toast('Bank account linked permanently!', 'success');
     } catch (err: any) {
       setBankModalError(err.message || 'Error saving bank account');
     } finally {
