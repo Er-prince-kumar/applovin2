@@ -16,7 +16,11 @@ export default async function TasksPage() {
   }
 
   return (
-    <DashboardShell>
+    <DashboardShell
+      user={user}
+      title="Ad Tasks & Rewards"
+      subtitle="Watch Rewarded Videos, Interstitials & Auto-Impressions to earn instant cash"
+    >
       <div className="space-y-6">
         <AdTaskCenter
           initialUser={{
