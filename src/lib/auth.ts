@@ -88,6 +88,7 @@ export async function getCurrentUser() {
         pendingBalance: true,
         lifetimeEarnings: true,
         totalWithdrawn: true,
+        payoutDetails: true,
         createdAt: true,
       },
     });
