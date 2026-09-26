@@ -22,6 +22,7 @@ model User {
   pendingBalance   Float     @default(0.0)
   lifetimeEarnings Float     @default(0.0)
   totalWithdrawn   Float     @default(0.0)
+  payoutDetails    String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
