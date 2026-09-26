@@ -74,70 +74,66 @@ export default function DownloadPage() {
 
           {/* Download Action Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto text-left">
-            {/* Android APK Card */}
-            <div className="bg-[#151B26] border border-emerald-500/40 rounded-2xl p-7 shadow-2xl relative overflow-hidden group">
-              <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all" />
+            {/* 1-Tap Instant Phone Install Card (Recommended) */}
+            <div className="bg-[#151B26] border-2 border-emerald-500/50 rounded-2xl p-7 shadow-2xl relative overflow-hidden group">
+              <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/15 rounded-full blur-2xl group-hover:bg-emerald-500/25 transition-all" />
 
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
                   <Smartphone className="w-6 h-6" />
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span className="px-3 py-1 rounded-full text-[10px] font-extrabold bg-emerald-500 text-gray-950 shadow-md">
+                  ★ RECOMMENDED
+                </span>
+              </div>
+
+              <h3 className="text-xl font-bold text-white mb-1">Direct Phone Install</h3>
+              <p className="text-xs text-gray-400 mb-5">
+                Instantly install the full LinkEarn app with bottom navigation directly to your phone screen with 0 download errors.
+              </p>
+
+              {/* Client Component with Native Install Prompt Hook */}
+              <DownloadClientSection />
+
+              <div className="mt-4 pt-3 border-t border-[#1E2638] flex flex-wrap items-center gap-3 text-[11px] text-gray-400">
+                <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  Zero Parsing Errors
+                </span>
+                <span>&bull;</span>
+                <span>Works on All Android & iOS</span>
+              </div>
+            </div>
+
+            {/* Android APK Package Card */}
+            <div className="bg-[#151B26] border border-[#232D3F] rounded-2xl p-7 shadow-2xl relative overflow-hidden group">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
+                  <Download className="w-6 h-6" />
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#1E2638] text-gray-300 border border-[#2E3C56]">
                   v1.0.0 APK
                 </span>
               </div>
 
-              <h3 className="text-xl font-bold text-white mb-1">Android Direct Package</h3>
+              <h3 className="text-xl font-bold text-white mb-1">Android APK Archive</h3>
               <p className="text-xs text-gray-400 mb-6">
-                Direct APK installer package for all Android phones and tablets (Android 8.0+).
+                Manual installer archive. If your phone security blocks installation with &quot;problem parsing package&quot;, use the Direct Phone Install on the left.
               </p>
 
               {/* Direct Download Button */}
               <a
                 href="/api/download/apk"
                 download="LinkEarn-Publisher-v1.0.0.apk"
-                className="w-full py-3.5 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-sm transition-all shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2 mb-4 hover:scale-[1.02]"
+                className="w-full py-3.5 px-5 rounded-xl bg-[#1E2638] hover:bg-[#28354c] text-white font-bold text-sm transition-all border border-[#2E3C56] flex items-center justify-center gap-2 mb-4 hover:scale-[1.01]"
               >
-                <Download className="w-5 h-5" />
-                <span>Download Android APK</span>
+                <Download className="w-5 h-5 text-emerald-400" />
+                <span>Download Raw APK File</span>
               </a>
 
-              <div className="flex flex-wrap items-center gap-4 text-[11px] text-gray-400">
-                <span className="flex items-center gap-1 text-emerald-400">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  Virus Scanned & Safe
-                </span>
-                <span>&bull;</span>
-                <span>Size: ~8.4 MB</span>
-                <span>&bull;</span>
-                <span>No Google Play Needed</span>
-              </div>
-            </div>
-
-            {/* iOS & PWA Instant Install Card */}
-            <div className="bg-[#151B26] border border-[#232D3F] rounded-2xl p-7 shadow-2xl relative overflow-hidden group">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
-                  <Apple className="w-6 h-6" />
-                </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-300 border border-purple-500/20">
-                  iOS & Web App
-                </span>
-              </div>
-
-              <h3 className="text-xl font-bold text-white mb-1">iPhone / iPad / Safari</h3>
-              <p className="text-xs text-gray-400 mb-6">
-                Install directly onto your iOS Home Screen without the App Store using Apple Web App standards.
-              </p>
-
-              {/* Client Component with Native Install Prompt Hook */}
-              <DownloadClientSection />
-
               <div className="mt-4 pt-4 border-t border-[#1E2638] text-[11px] text-gray-400 space-y-1">
-                <div className="font-semibold text-gray-300">How to add on iPhone:</div>
-                <div>1. Open <strong className="text-white">linkearn.com</strong> in Safari.</div>
-                <div>2. Tap the <strong className="text-white">Share</strong> icon (square with arrow ↑).</div>
-                <div>3. Tap <strong className="text-emerald-400">&quot;Add to Home Screen&quot;</strong>.</div>
+                <div className="font-semibold text-gray-300">GitHub Actions Build:</div>
+                <div>Automated cloud APK builds are triggered on <strong className="text-emerald-400">every commit</strong> in your GitHub repository.</div>
               </div>
             </div>
           </div>
