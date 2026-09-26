@@ -252,17 +252,20 @@ export default function WithdrawalsView({
         return;
       }
     } else if (bankFormType === 'UPI') {
-      if (!bankUpiId.trim() || !bankAccountHolder.trim()) {
-        setBankModalError('Please enter both your UPI ID and Account Holder Name');
+      if (!bankUpiId.trim()) {
+        setBankModalError('Please enter your UPI ID (e.g. yourname@okhdfcbank or 9876543210@paytm)');
         return;
       }
     }
 
     setSavingBank(true);
 
+    const finalHolder =
+      bankAccountHolder.trim() || (bankFormType === 'UPI' ? 'UPI User' : 'Verified User');
+
     const payload: PayoutMethodData = {
       type: bankFormType,
-      accountHolder: bankAccountHolder.trim(),
+      accountHolder: finalHolder,
       bankName: bankFormType === 'BANK_TRANSFER' ? bankName.trim() : null,
       accountNumber: bankFormType === 'BANK_TRANSFER' ? bankAccountNumber.trim() : null,
       ifscCode: bankFormType === 'BANK_TRANSFER' ? bankIfscCode.trim().toUpperCase() : null,
@@ -726,14 +729,18 @@ export default function WithdrawalsView({
               {/* Account Holder Name */}
               <div>
                 <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
-                  Account Holder Full Name *
+                  Account Holder Name {bankFormType === 'UPI' ? '(Optional)' : '*'}
                 </label>
                 <input
                   type="text"
-                  required
+                  required={bankFormType !== 'UPI'}
                   value={bankAccountHolder}
                   onChange={(e) => setBankAccountHolder(e.target.value)}
-                  placeholder="e.g. Prince Kumar Singh"
+                  placeholder={
+                    bankFormType === 'UPI'
+                      ? 'Optional: Enter name (or leave empty)'
+                      : 'e.g. Prince Kumar Singh'
+                  }
                   className="w-full bg-[#090D16] border border-[#1E2638] rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
                 />
               </div>
