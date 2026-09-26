@@ -53,6 +53,15 @@ async function main() {
   console.log('Does HTML contain bank name "State Bank of India"?', html.includes('State Bank of India'));
   console.log('Does HTML contain "Linked Bank Account"?', html.includes('Linked Bank Account'));
   console.log('Does HTML contain "No Bank Account Linked"?', html.includes('No Bank Account Linked'));
+
+  console.log('--- 6. GET /profile page check ---');
+  const profileRes = await fetch('http://localhost:3000/profile', {
+    headers: { Cookie: `linkearn_session=${token}` },
+  });
+  const profileHtml = await profileRes.text();
+  console.log('Profile page status:', profileRes.status);
+  console.log('Does Profile contain bank name "State Bank of India"?', profileHtml.includes('State Bank of India'));
+  console.log('Does Profile contain "Connected"?', profileHtml.includes('Connected'));
 }
 
 main().catch(console.error);
