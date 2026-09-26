@@ -1,0 +1,18 @@
+{
+  "name": "LinkEarn — Publisher Mobile App",
+  "short_name": "LinkEarn",
+  "description": "Turn genuine traffic into measurable earnings. Manage monetization links and payouts.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0B0F17",
+  "theme_color": "#0B0F17",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

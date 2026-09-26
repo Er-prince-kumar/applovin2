@@ -1,0 +1,168 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import Logo from '@/components/brand/Logo';
+import {
+  LayoutDashboard,
+  Link2,
+  PlusCircle,
+  BarChart3,
+  DollarSign,
+  Wallet,
+  Users2,
+  User,
+  Settings,
+  HelpCircle,
+  LogOut,
+  ShieldCheck,
+  Smartphone,
+  Download,
+} from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
+
+interface SidebarProps {
+  user: {
+    name: string;
+    email: string;
+    role: string;
+    availableBalance: number;
+    pendingBalance: number;
+  };
+}
+
+const navItems = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/links', label: 'My Links', icon: Link2 },
+  { href: '/links/create', label: 'Create Link', icon: PlusCircle, highlight: true },
+  { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/earnings', label: 'Earnings & Ledger', icon: DollarSign },
+  { href: '/withdrawals', label: 'Withdrawals', icon: Wallet },
+  { href: '/referrals', label: 'Referrals', icon: Users2 },
+  { href: '/download', label: 'Mobile App (APK)', icon: Smartphone },
+  { href: '/profile', label: 'Profile', icon: User },
+  { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/support', label: 'Support & FAQ', icon: HelpCircle },
+];
+
+export default function Sidebar({ user }: SidebarProps) {
+  const pathname = usePathname();
+
+  async function handleLogout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/login';
+  }
+
+  return (
+    <aside className="w-64 bg-[#0d121c] border-r border-[#1e2638] flex flex-col h-screen sticky top-0 shrink-0 select-none z-30 hidden md:flex">
+      {/* Brand Header */}
+      <div className="p-5 border-b border-[#1e2638]">
+        <Logo size="md" showTagline={true} />
+      </div>
+
+      {/* User Balance Quick Glance */}
+      <div className="mx-4 my-3 p-3.5 rounded-xl bg-[#141b27] border border-[#222c40]">
+        <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+          Available Balance
+        </div>
+        <div className="text-xl font-bold text-emerald-400 mt-1">
+          {formatCurrency(user.availableBalance)}
+        </div>
+        <div className="text-[11px] text-gray-400 mt-0.5 flex justify-between items-center">
+          <span>Pending: {formatCurrency(user.pendingBalance)}</span>
+          <Link href="/withdrawals" className="text-emerald-400 hover:underline font-medium">
+            Payout
+          </Link>
+        </div>
+      </div>
+
+      {/* Main Navigation */}
+      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname?.startsWith(item.href) && item.href !== '/links/create');
+          const Icon = item.icon;
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                item.highlight
+                  ? 'bg-gradient-to-r from-emerald-500/15 to-teal-500/10 text-emerald-300 border border-emerald-500/25 hover:border-emerald-500/40 hover:bg-emerald-500/20 my-2'
+                  : isActive
+                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                  : 'text-gray-400 hover:text-gray-200 hover:bg-[#151b26]'
+              }`}
+            >
+              <Icon className={`w-4 h-4 ${isActive || item.highlight ? 'text-emerald-400' : 'text-gray-400'}`} />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+
+        {/* Admin Link if role is ADMIN */}
+        {user.role === 'ADMIN' && (
+          <div className="pt-3 border-t border-[#1e2638] mt-3">
+            <Link
+              href="/admin"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium bg-purple-500/10 text-purple-300 border border-purple-500/20 hover:bg-purple-500/20 transition-all"
+            >
+              <ShieldCheck className="w-4 h-4 text-purple-400" />
+              <span>Admin Center</span>
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {/* Mobile App Download Card */}
+      <div className="mx-3 my-2 p-3 rounded-xl bg-gradient-to-br from-emerald-950/40 via-[#151c28] to-[#111722] border border-emerald-500/20 text-xs">
+        <div className="flex items-center gap-2 text-emerald-400 font-semibold mb-1">
+          <Smartphone className="w-4 h-4" />
+          <span>Mobile App (APK)</span>
+        </div>
+        <p className="text-[11px] text-gray-400 mb-2.5">
+          Manage earnings & smart links directly from your phone.
+        </p>
+        <div className="flex items-center gap-2">
+          <a
+            href="/api/download/apk"
+            download="LinkEarn-Publisher-v1.0.0.apk"
+            className="flex-1 text-center py-1.5 px-2 bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-[11px] rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm"
+          >
+            <Download className="w-3 h-3" />
+            <span>Get APK</span>
+          </a>
+          <Link
+            href="/download"
+            className="py-1.5 px-2 bg-[#1a2233] hover:bg-[#222c42] text-gray-300 text-[11px] font-medium rounded-lg border border-[#26334d] transition-colors"
+          >
+            Details
+          </Link>
+        </div>
+      </div>
+
+      {/* User Footer & Logout */}
+      <div className="p-4 border-t border-[#1e2638] bg-[#0c1018]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 text-gray-950 font-bold flex items-center justify-center text-xs shrink-0">
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="truncate">
+              <div className="text-xs font-semibold text-white truncate">{user.name}</div>
+              <div className="text-[11px] text-gray-400 truncate">{user.email}</div>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            title="Log out"
+            className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
+}

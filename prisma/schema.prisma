@@ -1,0 +1,255 @@
+// Prisma schema for LinkEarn monetization platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  passwordHash     String
+  name             String
+  role             String    @default("USER") // USER, ADMIN
+  status           String    @default("ACTIVE") // ACTIVE, SUSPENDED, PENDING
+  referralCode     String    @unique
+  referredById     String?
+  availableBalance Float     @default(0.0)
+  pendingBalance   Float     @default(0.0)
+  lifetimeEarnings Float     @default(0.0)
+  totalWithdrawn   Float     @default(0.0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relationships
+  referredBy       User?             @relation("UserReferrals", fields: [referredById], references: [id])
+  referredUsers    User[]            @relation("UserReferrals")
+  sessions         Session[]
+  links            Link[]
+  earnings         Earning[]
+  transactions     Transaction[]
+  withdrawals      Withdrawal[]
+  referralRecords  Referral[]        @relation("Referrer")
+  referredRecords  Referral[]        @relation("Referred")
+  referralEarnings ReferralEarning[] @relation("ReferrerEarnings")
+  sourcedEarnings  ReferralEarning[] @relation("ReferredEarnings")
+  adminActions     AdminAction[]     @relation("AdminActionPerformer")
+
+  @@index([email])
+  @@index([referralCode])
+  @@index([role])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  model       String   @default("CPC") // CPM, CPC, CPA
+  rate        Float    @default(0.05) // CPC rate ($), CPM rate per 1k ($), CPA payout ($)
+  category    String   @default("General")
+  status      String   @default("ACTIVE") // ACTIVE, PAUSED, COMPLETED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  links    Link[]
+  earnings Earning[]
+
+  @@index([status])
+}
+
+model Link {
+  id             String   @id @default(cuid())
+  userId         String
+  campaignId     String?
+  name           String
+  slug           String   @unique
+  destinationUrl String
+  description    String?
+  status         String   @default("ACTIVE") // ACTIVE, PAUSED, ARCHIVED
+  totalClicks    Int      @default(0)
+  validClicks    Int      @default(0)
+  earnings       Float    @default(0.0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaign    Campaign?    @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  clicks      ClickEvent[]
+  conversions Conversion[]
+  earningsRel Earning[]
+
+  @@index([slug])
+  @@index([userId])
+  @@index([status])
+}
+
+model ClickEvent {
+  id          String   @id @default(cuid())
+  linkId      String
+  visitorHash String
+  ipAddress   String?
+  country     String?  @default("US")
+  device      String?  @default("Desktop") // Desktop, Mobile, Tablet
+  browser     String?  @default("Chrome")
+  os          String?  @default("Windows")
+  referrer    String?
+  userAgent   String?
+  status      String   @default("VALID") // VALID, SUSPICIOUS, INVALID
+  fraudReason String?
+  createdAt   DateTime @default(now())
+
+  link        Link        @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  earnings    Earning[]
+  conversions Conversion[]
+
+  @@index([linkId])
+  @@index([visitorHash])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Conversion {
+  id           String   @id @default(cuid())
+  linkId       String
+  clickEventId String?
+  amount       Float    @default(0.0)
+  status       String   @default("APPROVED") // PENDING, APPROVED, REJECTED
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  link       Link        @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  clickEvent ClickEvent? @relation(fields: [clickEventId], references: [id], onDelete: SetNull)
+
+  @@index([linkId])
+  @@index([status])
+}
+
+model Earning {
+  id           String   @id @default(cuid())
+  userId       String
+  linkId       String?
+  campaignId   String?
+  clickEventId String?
+  amount       Float
+  type         String   @default("CPC") // CPM, CPC, CPA, REFERRAL_BONUS
+  description  String?
+  createdAt    DateTime @default(now())
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  link       Link?       @relation(fields: [linkId], references: [id], onDelete: SetNull)
+  campaign   Campaign?   @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  clickEvent ClickEvent? @relation(fields: [clickEventId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([linkId])
+  @@index([createdAt])
+}
+
+model Transaction {
+  id           String   @id @default(cuid())
+  userId       String
+  amount       Float
+  type         String   // EARNING, WITHDRAWAL, REFERRAL_BONUS, ADJUSTMENT
+  balanceAfter Float
+  referenceId  String?
+  description  String?
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Withdrawal {
+  id             String    @id @default(cuid())
+  userId         String
+  amount         Float
+  paymentMethod  String    // PAYPAL, WIRE_TRANSFER, CRYPTO_USDT, PAYONEER
+  paymentDetails String    // Masked/structured details
+  notes          String?
+  adminNote      String?
+  status         String    @default("PENDING") // PENDING, APPROVED, PROCESSING, PAID, REJECTED
+  processedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Referral {
+  id             String   @id @default(cuid())
+  referrerId     String
+  referredUserId String   @unique
+  status         String   @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt      DateTime @default(now())
+
+  referrer     User @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredUser User @relation("Referred", fields: [referredUserId], references: [id], onDelete: Cascade)
+
+  @@index([referrerId])
+}
+
+model ReferralEarning {
+  id              String   @id @default(cuid())
+  referrerId      String
+  referredUserId  String
+  sourceEarningId String?
+  commissionRate  Float    @default(0.05) // 5%
+  amount          Float
+  createdAt       DateTime @default(now())
+
+  referrer     User @relation("ReferrerEarnings", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredUser User @relation("ReferredEarnings", fields: [referredUserId], references: [id], onDelete: Cascade)
+
+  @@index([referrerId])
+  @@index([referredUserId])
+}
+
+model AdminAction {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String   // USER_SUSPEND, WITHDRAWAL_APPROVE, SETTINGS_UPDATE, etc.
+  targetType String   // USER, WITHDRAWAL, CAMPAIGN, SETTING
+  targetId   String?
+  details    String?
+  createdAt  DateTime @default(now())
+
+  admin User @relation("AdminActionPerformer", fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([createdAt])
+}
+
+model PlatformSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+}

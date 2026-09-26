@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">LinkEarn</string>
+    <string name="title_activity_main">LinkEarn</string>
+    <string name="package_name">com.linkearn.publisher</string>
+    <string name="custom_url_scheme">com.linkearn.publisher</string>
+</resources>
