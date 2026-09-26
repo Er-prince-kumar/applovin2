@@ -74,8 +74,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const rawHolder = (result.data.accountHolder || '').trim();
+    const finalAccountHolder = rawHolder || user.name || 'Verified User';
+
     const payload = {
       ...result.data,
+      accountHolder: finalAccountHolder,
       updatedAt: new Date().toISOString(),
     };
 
