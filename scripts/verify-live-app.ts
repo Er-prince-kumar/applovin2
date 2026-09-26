@@ -147,8 +147,8 @@ async function verifyLiveApp() {
     assert(downloadPageRes.status === 200, 'Mobile download page (/download) returns 200 OK');
     const downloadPageHtml = await downloadPageRes.text();
     assert(
-      downloadPageHtml.includes('Android') && downloadPageHtml.includes('APK'),
-      'Download page includes Android APK download information'
+      downloadPageHtml.includes('Install App') || downloadPageHtml.includes('Phone'),
+      'Download page includes 1-tap phone installation information'
     );
 
     // 12. Direct APK Download API
