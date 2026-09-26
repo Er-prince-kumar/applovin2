@@ -36,6 +36,7 @@ export default async function WithdrawalsPage() {
         lifetimeEarnings={user.lifetimeEarnings}
         totalWithdrawn={user.totalWithdrawn}
         minWithdrawal={minWithdrawal}
+        initialPayoutMethod={user.payoutDetails ? JSON.parse(user.payoutDetails) : null}
       />
     </DashboardShell>
   );
