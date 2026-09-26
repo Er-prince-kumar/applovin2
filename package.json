@@ -16,7 +16,8 @@
     "cap:open:android": "cap open android",
     "watch:github": "tsx scripts/auto-sync-github.ts",
     "git:remote": "tsx scripts/set-github-remote.ts",
-    "git:push": "git add -A && git commit -m \"Manual sync update\" && git push origin main"
+    "git:push": "git add -A && git commit -m \"Manual sync update\" && git push origin main",
+    "tunnel": "cloudflared tunnel --url http://localhost:3000"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",
