@@ -36,9 +36,11 @@ yarn-error.log*
 !.env.example
 
 # database
-*.db
 *.db-journal
-dev.db*
+dev.db-journal
+*.db-wal
+*.db-shm
+!prisma/dev.db
 
 # vercel
 .vercel
