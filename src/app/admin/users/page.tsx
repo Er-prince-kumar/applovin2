@@ -5,6 +5,9 @@ import prisma from '@/lib/prisma';
 import AdminShell from '@/components/layout/AdminShell';
 import AdminUsersView from './AdminUsersView';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function AdminUsersPage() {
   const user = await getCurrentUser();
   if (!user || user.role !== 'ADMIN') {
@@ -23,6 +26,7 @@ export default async function AdminUsersPage() {
       pendingBalance: true,
       lifetimeEarnings: true,
       totalWithdrawn: true,
+      payoutDetails: true,
       createdAt: true,
       _count: {
         select: {
