@@ -40,7 +40,7 @@ const navItems = [
   { href: '/earnings', label: 'Earnings & Ledger', icon: DollarSign },
   { href: '/withdrawals', label: 'Withdrawals', icon: Wallet },
   { href: '/referrals', label: 'Referrals', icon: Users2 },
-  { href: '/download', label: 'Mobile App (APK)', icon: Smartphone },
+  { href: '/download', label: 'Mobile App', icon: Smartphone },
   { href: '/profile', label: 'Profile', icon: User },
   { href: '/settings', label: 'Settings', icon: Settings },
   { href: '/support', label: 'Support & FAQ', icon: HelpCircle },
