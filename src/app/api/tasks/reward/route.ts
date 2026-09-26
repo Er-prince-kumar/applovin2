@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       const transaction = await tx.transaction.create({
         data: {
           userId: user.id,
-          type: 'EARNING_CREDIT',
+          type: 'EARNING',
           amount: rewardAmount,
           balanceAfter: updatedUser.availableBalance,
           description: `Reward for watching ${taskType.replace(/_/g, ' ')} ad via ${adNetwork}`,
