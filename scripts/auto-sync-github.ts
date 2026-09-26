@@ -145,7 +145,14 @@ async function performSync() {
         execSync(`git push origin ${branch}`, { stdio: 'inherit' });
         console.log(`🎉 [Auto-Sync] SUCCESS: All changes live on GitHub!`);
       } catch (pushErr: any) {
-        console.error(`⚠️ [Auto-Sync] Push failed. Make sure you have push access or set up credentials:`, pushErr.message);
+        try {
+          console.log(`🔄 [Auto-Sync] Rebasing remote changes...`);
+          execSync(`git pull --rebase origin ${branch}`, { stdio: 'inherit' });
+          execSync(`git push origin ${branch}`, { stdio: 'inherit' });
+          console.log(`🎉 [Auto-Sync] SUCCESS: All changes live on GitHub after rebase!`);
+        } catch (retryErr: any) {
+          console.error(`⚠️ [Auto-Sync] Push failed:`, retryErr.message);
+        }
       }
     } else {
       console.log(`\n📌 [Auto-Sync] Changes committed locally!`);
