@@ -79,6 +79,16 @@ export default function Topbar({
           </button>
         )}
 
+        {/* Ad Tasks Shortcut */}
+        <Link
+          href="/tasks"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600/20 to-indigo-600/20 hover:from-blue-600/30 hover:to-indigo-600/30 border border-blue-500/30 text-blue-300 hover:text-white font-semibold text-xs transition-colors shadow-sm"
+          title="Watch Rewarded Ads & Earn Cash"
+        >
+          <Play className="w-3.5 h-3.5 fill-blue-400 text-blue-400" />
+          <span>Ad Tasks</span>
+        </Link>
+
         {/* Install Mobile App Shortcut */}
         <Link
           href="/download"
