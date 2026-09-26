@@ -5,6 +5,9 @@ import prisma from '@/lib/prisma';
 import DashboardShell from '@/components/layout/DashboardShell';
 import WithdrawalsView from './WithdrawalsView';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function WithdrawalsPage() {
   const user = await getCurrentUser();
   if (!user) {
@@ -23,6 +26,16 @@ export default async function WithdrawalsPage() {
 
   const minWithdrawal = setting ? parseFloat(setting.value) : 10.0;
 
+  const initialPayout = (() => {
+    if (!user.payoutDetails) return null;
+    try {
+      const parsed = JSON.parse(user.payoutDetails);
+      return typeof parsed === 'object' && parsed !== null ? parsed : null;
+    } catch {
+      return null;
+    }
+  })();
+
   return (
     <DashboardShell
       user={user}
@@ -36,7 +49,7 @@ export default async function WithdrawalsPage() {
         lifetimeEarnings={user.lifetimeEarnings}
         totalWithdrawn={user.totalWithdrawn}
         minWithdrawal={minWithdrawal}
-        initialPayoutMethod={user.payoutDetails ? JSON.parse(user.payoutDetails) : null}
+        initialPayoutMethod={initialPayout}
       />
     </DashboardShell>
   );
