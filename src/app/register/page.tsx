@@ -63,8 +63,8 @@ function RegisterForm() {
         localStorage.setItem('linkearn_remembered_email', email.trim());
       } catch {}
 
-      router.push('/dashboard');
-      router.refresh();
+      // Navigate cleanly to dashboard
+      window.location.href = '/dashboard';
     } catch (err: any) {
       setError(err.message || 'Registration error occurred');
     } finally {
