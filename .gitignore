@@ -46,3 +46,8 @@ dev.db*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# binaries
+*.exe
+cloudflared.exe
+
