@@ -20,6 +20,8 @@ import {
   ExternalLink,
   ShieldCheck,
   Plus,
+  Play,
+  Sparkles,
 } from 'lucide-react';
 
 export default async function DashboardPage() {
