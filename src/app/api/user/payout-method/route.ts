@@ -14,7 +14,7 @@ const payoutMethodSchema = z.object({
     'EASYPAISA',
     'JAZZCASH',
   ]),
-  accountHolder: z.string().min(2, 'Account holder name is required'),
+  accountHolder: z.string().optional().nullable(),
   bankName: z.string().optional().nullable(),
   accountNumber: z.string().optional().nullable(),
   ifscCode: z.string().optional().nullable(),
