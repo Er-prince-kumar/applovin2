@@ -19,6 +19,8 @@ import {
   ShieldCheck,
   Smartphone,
   Download,
+  Play,
+  Cpu,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
@@ -34,6 +36,8 @@ interface SidebarProps {
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/tasks', label: 'Ad Tasks & Rewards', icon: Play, adHighlight: true },
+  { href: '/ad-network', label: 'Ad Networks & SDK', icon: Cpu },
   { href: '/links', label: 'My Links', icon: Link2 },
   { href: '/links/create', label: 'Create Link', icon: PlusCircle, highlight: true },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
