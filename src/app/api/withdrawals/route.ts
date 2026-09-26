@@ -122,6 +122,9 @@ export async function POST(request: NextRequest) {
         data: {
           availableBalance: { decrement: amount },
           pendingBalance: { increment: amount },
+          ...(saveAsDefault && structuredDetails
+            ? { payoutDetails: JSON.stringify(structuredDetails) }
+            : {}),
         },
       });
 
