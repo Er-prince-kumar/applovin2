@@ -44,6 +44,7 @@ async function testAdTasks() {
     data: {
       userId: user.id,
       amount: rewardAmount,
+      balanceAfter: updatedUser.availableBalance,
       type: 'EARNING',
       description: 'Ad Task Reward - Rewarded Video (AppLovin MAX)',
     },
