@@ -8,7 +8,6 @@ import {
   Lock,
   Mail,
   ArrowRight,
-  ShieldCheck,
   AlertCircle,
   KeyRound,
   Eye,
@@ -16,15 +15,15 @@ import {
   Smartphone,
   CheckCircle2,
   Download,
+  Check,
 } from 'lucide-react';
-import { validatePassword } from '@/lib/password';
-import PasswordStrengthIndicator from '@/components/auth/PasswordStrengthIndicator';
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,6 +34,15 @@ export default function LoginPage() {
   const [appInstalled, setAppInstalled] = useState(false);
 
   useEffect(() => {
+    // Restore remembered email if available
+    try {
+      const savedEmail = localStorage.getItem('linkearn_remembered_email');
+      if (savedEmail) {
+        setEmail(savedEmail);
+        setRememberMe(true);
+      }
+    } catch {}
+
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -47,27 +55,28 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-
-    // Validate password combination
-    const validation = validatePassword(password);
-    if (!validation.isValid) {
-      setError(`Password must include: ${validation.errors.join(', ')}`);
-      return;
-    }
-
     setLoading(true);
 
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to authenticate');
+        throw new Error(data.error || 'Invalid email or password');
       }
+
+      // Persist email in browser for 1-tap future logins
+      try {
+        if (rememberMe) {
+          localStorage.setItem('linkearn_remembered_email', email.trim());
+        } else {
+          localStorage.removeItem('linkearn_remembered_email');
+        }
+      } catch {}
 
       // Check if already in standalone PWA app mode
       const isStandalone =
@@ -212,6 +221,7 @@ export default function LoginPage() {
                   <input
                     type="email"
                     required
+                    autoComplete="username"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="publisher@linkearn.com"
@@ -223,7 +233,7 @@ export default function LoginPage() {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider">
-                    Password (Combination Required)
+                    Password
                   </label>
                   <Link
                     href="/forgot-password"
@@ -237,6 +247,7 @@ export default function LoginPage() {
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
+                    autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
@@ -251,9 +262,19 @@ export default function LoginPage() {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+              </div>
 
-                {/* Password strength & combination validation */}
-                <PasswordStrengthIndicator password={password} showDetails={true} />
+              {/* Remember Me Checkbox */}
+              <div className="flex items-center justify-between pt-1">
+                <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-gray-300 hover:text-white transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 rounded border-[#232D3F] bg-[#0D121C] text-emerald-500 focus:ring-emerald-500/20"
+                  />
+                  <span>Remember my login (30 days)</span>
+                </label>
               </div>
 
               <button
