@@ -43,6 +43,8 @@ export default function ProfileView({ user }: ProfileViewProps) {
           const data = await res.json();
           if (data?.payoutDetails) {
             setBankInfo(data.payoutDetails);
+          } else {
+            setBankInfo(null);
           }
         }
       } catch {}
