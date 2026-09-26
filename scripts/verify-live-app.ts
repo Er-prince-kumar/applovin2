@@ -165,6 +165,45 @@ async function verifyLiveApp() {
     );
     const apkBuffer = await apkDownloadRes.arrayBuffer();
     assert(apkBuffer.byteLength > 1000, `APK file served with valid size (${apkBuffer.byteLength} bytes)`);
+
+    // 13. Ad Tasks & Rewards Hub
+    const tasksPageRes = await fetch(`${baseUrl}/tasks`, {
+      headers: { Cookie: publisherCookie },
+    });
+    assert(tasksPageRes.status === 200, 'Ad Tasks hub (/tasks) returns 200 OK');
+
+    // 14. Ad Network Settings Page
+    const adNetworkPageRes = await fetch(`${baseUrl}/ad-network`, {
+      headers: { Cookie: publisherCookie },
+    });
+    assert(adNetworkPageRes.status === 200, 'Ad Network Settings (/ad-network) returns 200 OK');
+
+    // 15. Ad Network API Configuration
+    const adNetworkApiRes = await fetch(`${baseUrl}/api/ad-network`, {
+      headers: { Cookie: publisherCookie },
+    });
+    assert(adNetworkApiRes.status === 200, 'Ad Network API (/api/ad-network) returns 200 OK');
+    const adNetworkData = await adNetworkApiRes.json();
+    assert(Boolean(adNetworkData.config?.unityGameId), 'Unity Game ID present in config');
+    assert(Boolean(adNetworkData.config?.applovinSdkKey), 'AppLovin SDK Key present in config');
+
+    // 16. Ad Reward Claim API
+    const rewardClaimRes = await fetch(`${baseUrl}/api/tasks/reward`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: publisherCookie,
+      },
+      body: JSON.stringify({
+        taskType: 'REWARDED_VIDEO',
+        durationSeconds: 30,
+        adNetwork: 'AppLovin MAX',
+      }),
+    });
+    assert(rewardClaimRes.status === 200, 'Reward claim API (/api/tasks/reward) returns 200 OK');
+    const rewardData = await rewardClaimRes.json();
+    assert(rewardData.success === true, 'Rewarded Video reward successfully claimed');
+    assert(rewardData.rewardAmount === 0.05, 'Rewarded Video credited $0.05');
   } catch (err) {
     console.error('Test execution exception:', err);
     failed++;
