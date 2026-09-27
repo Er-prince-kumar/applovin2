@@ -105,6 +105,53 @@ export async function getCurrentUser() {
       }
     }
 
+    // Dynamic Yield Reconciliation: Ensure availableBalance & lifetimeEarnings reflect all link and task earnings
+    try {
+      const [linkAgg, taskAgg, approvedW, pendingW] = await Promise.all([
+        prisma.link.aggregate({
+          where: { userId: user.id },
+          _sum: { earnings: true },
+        }),
+        prisma.earning.aggregate({
+          where: { userId: user.id, linkId: null },
+          _sum: { amount: true },
+        }),
+        prisma.withdrawal.aggregate({
+          where: { userId: user.id, status: 'APPROVED' },
+          _sum: { amount: true },
+        }),
+        prisma.withdrawal.aggregate({
+          where: { userId: user.id, status: { in: ['PENDING', 'PROCESSING'] } },
+          _sum: { amount: true },
+        }),
+      ]);
+
+      const totalEarned = Number(((linkAgg._sum.earnings || 0) + (taskAgg._sum.amount || 0)).toFixed(2));
+      const totalDisbursed = Number((approvedW._sum.amount || 0).toFixed(2));
+      const totalPending = Number((pendingW._sum.amount || 0).toFixed(2));
+      const calculatedAvailable = Number(Math.max(0, totalEarned - totalDisbursed - totalPending).toFixed(2));
+
+      if (totalEarned > user.lifetimeEarnings || calculatedAvailable > user.availableBalance) {
+        const newLifetime = Math.max(user.lifetimeEarnings, totalEarned);
+        const newAvailable = Math.max(user.availableBalance, calculatedAvailable);
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            lifetimeEarnings: newLifetime,
+            availableBalance: newAvailable,
+            pendingBalance: totalPending,
+            totalWithdrawn: totalDisbursed,
+          },
+        });
+        user.lifetimeEarnings = newLifetime;
+        user.availableBalance = newAvailable;
+        user.pendingBalance = totalPending;
+        user.totalWithdrawn = totalDisbursed;
+      }
+    } catch (e) {
+      console.warn('Yield reconciliation error:', e);
+    }
+
     return user;
   } catch (err: any) {
     if (err?.digest === 'DYNAMIC_SERVER_USAGE') {

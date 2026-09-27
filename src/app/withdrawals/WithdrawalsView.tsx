@@ -85,6 +85,44 @@ export default function WithdrawalsView({
   const [withdrawals, setWithdrawals] = useState<WithdrawalRecord[]>(initialWithdrawals);
   const [available, setAvailable] = useState(availableBalance);
   const [pending, setPending] = useState(pendingBalance);
+  const [lifetime, setLifetime] = useState(lifetimeEarnings);
+
+  // Real-time Balance & Yield Synchronization (on mount, window focus, and periodic interval)
+  useEffect(() => {
+    async function syncRealtimeBalances() {
+      try {
+        const res = await fetch('/api/withdrawals', {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.balances) {
+            setAvailable(data.balances.available);
+            setPending(data.balances.pending);
+            setLifetime(data.balances.lifetime);
+          }
+          if (data?.withdrawals) {
+            setWithdrawals(data.withdrawals);
+          }
+        }
+      } catch (e) {
+        console.warn('Could not sync realtime balances:', e);
+      }
+    }
+
+    syncRealtimeBalances();
+
+    const handleFocus = () => syncRealtimeBalances();
+    window.addEventListener('focus', handleFocus);
+
+    const interval = setInterval(syncRealtimeBalances, 8000);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+    };
+  }, []);
 
   // Saved Bank Account state
   const [savedMethod, setSavedMethod] = useState<PayoutMethodData | null>(
@@ -544,7 +582,7 @@ export default function WithdrawalsView({
 
         <StatCard
           title="Lifetime Earnings"
-          value={formatCurrency(lifetimeEarnings)}
+          value={formatCurrency(lifetime)}
           subtitle="All-time verified publisher yield"
           icon={TrendingUp}
           accent="blue"
