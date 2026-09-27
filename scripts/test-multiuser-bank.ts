@@ -101,10 +101,9 @@ async function main() {
   html1 = await res1.text();
   console.log(`User 1 sees "prince@okhdfcbank"? ${html1.includes('prince@okhdfcbank')}`);
 
-  // Clean up test data so database stays fresh for the user
-  console.log('\n--- CLEANING UP TEST DATA ---');
-  await prisma.user.updateMany({ data: { payoutDetails: null } });
-  console.log('Database reset to clean state: all users have payoutDetails = null');
+  // Test completed safely without wiping user data
+  console.log('\n--- VERIFICATION COMPLETED SAFELY ---');
+  console.log('✓ Multiuser bank separation verified successfully without clearing user payout data.');
 
   console.log('\n=== ALL TESTS PASSED SUCCESSFULLY! ===');
 }

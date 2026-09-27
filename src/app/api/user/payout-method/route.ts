@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import {
+  ensurePayoutDetailsPersisted,
+  savePayoutBackup,
+  deletePayoutBackup,
+} from '@/lib/payout-storage';
 
 const payoutMethodSchema = z.object({
   type: z.enum([
@@ -37,13 +42,20 @@ export async function GET() {
 
     const userData = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { payoutDetails: true },
+      select: { payoutDetails: true, email: true },
     });
 
+    // Auto-heal from persistent backup if DB was reset
+    const effectiveDetails = await ensurePayoutDetailsPersisted(
+      user.id,
+      user.email,
+      userData?.payoutDetails || null
+    );
+
     const parsed = (() => {
-      if (!userData?.payoutDetails) return null;
+      if (!effectiveDetails) return null;
       try {
-        const obj = JSON.parse(userData.payoutDetails);
+        const obj = JSON.parse(effectiveDetails);
         return typeof obj === 'object' && obj !== null ? obj : null;
       } catch {
         return null;
@@ -83,11 +95,15 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date().toISOString(),
     };
 
-    const updatedUser = await prisma.user.update({
+    // 1. Save in SQLite Database
+    await prisma.user.update({
       where: { id: user.id },
       data: { payoutDetails: JSON.stringify(payload) },
       select: { id: true, payoutDetails: true },
     });
+
+    // 2. Save in permanent file backup so code updates & git commits never lose it
+    savePayoutBackup(user.id, user.email, payload);
 
     return NextResponse.json({
       success: true,
@@ -112,12 +128,14 @@ export async function DELETE() {
       data: { payoutDetails: null },
     });
 
+    deletePayoutBackup(user.id, user.email);
+
     return NextResponse.json({
       success: true,
       message: 'Bank account unlinked successfully',
     });
   } catch (error) {
     console.error('Error deleting payout details:', error);
-    return NextResponse.json({ error: 'Failed to unlink bank details' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to delete payout details' }, { status: 500 });
   }
 }

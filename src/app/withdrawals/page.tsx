@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import DashboardShell from '@/components/layout/DashboardShell';
 import WithdrawalsView from './WithdrawalsView';
+import { ensurePayoutDetailsPersisted } from '@/lib/payout-storage';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -26,10 +27,12 @@ export default async function WithdrawalsPage() {
 
   const minWithdrawal = setting ? parseFloat(setting.value) : 10.0;
 
+  const rawDetails = await ensurePayoutDetailsPersisted(user.id, user.email, user.payoutDetails);
+
   const initialPayout = (() => {
-    if (!user.payoutDetails) return null;
+    if (!rawDetails) return null;
     try {
-      const parsed = JSON.parse(user.payoutDetails);
+      const parsed = JSON.parse(rawDetails);
       return typeof parsed === 'object' && parsed !== null ? parsed : null;
     } catch {
       return null;

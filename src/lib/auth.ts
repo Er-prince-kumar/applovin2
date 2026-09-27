@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import prisma from './prisma';
+import { ensurePayoutDetailsPersisted } from './payout-storage';
 
 const SESSION_COOKIE_NAME = 'linkearn_session';
 const JWT_SECRET = new TextEncoder().encode(
@@ -95,6 +96,13 @@ export async function getCurrentUser() {
 
     if (!user || user.status === 'SUSPENDED') {
       return null;
+    }
+
+    if (!user.payoutDetails) {
+      const restored = await ensurePayoutDetailsPersisted(user.id, user.email, null);
+      if (restored) {
+        user.payoutDetails = restored;
+      }
     }
 
     return user;

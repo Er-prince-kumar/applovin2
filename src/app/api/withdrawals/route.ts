@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { savePayoutBackup } from '@/lib/payout-storage';
 
 const withdrawalRequestSchema = z.object({
   amount: z.number().positive('Withdrawal amount must be greater than 0'),
@@ -163,6 +164,10 @@ export async function POST(request: NextRequest) {
 
       return newWithdrawal;
     });
+
+    if (saveAsDefault && structuredDetails) {
+      savePayoutBackup(user.id, user.email, structuredDetails);
+    }
 
     return NextResponse.json(
       {
