@@ -86,6 +86,16 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      // 2b. Log immutable Earning record so Dashboard and /earnings page show accurate aggregated revenue
+      await tx.earning.create({
+        data: {
+          userId: user.id,
+          amount: rewardAmount,
+          type: 'CPC',
+          description: `Ad Task Reward: ${taskType.replace(/_/g, ' ')} (${adNetwork})`,
+        },
+      });
+
       // 3. Referral bonus (5% lifetime commission to sponsor if user was referred)
       if (user.referredById) {
         const referralCommission = Number((rewardAmount * 0.05).toFixed(4));
@@ -105,6 +115,14 @@ export async function POST(request: NextRequest) {
               amount: referralCommission,
               balanceAfter: sponsor.availableBalance,
               description: `5% referral commission from ${user.name} ad task reward`,
+            },
+          });
+
+          await tx.referralEarning.create({
+            data: {
+              referrerId: user.referredById,
+              referredUserId: user.id,
+              amount: referralCommission,
             },
           });
         }

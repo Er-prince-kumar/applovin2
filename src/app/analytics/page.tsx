@@ -5,6 +5,9 @@ import prisma from '@/lib/prisma';
 import DashboardShell from '@/components/layout/DashboardShell';
 import AnalyticsView from './AnalyticsView';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function AnalyticsPage() {
   const user = await getCurrentUser();
   if (!user) {

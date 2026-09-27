@@ -6,6 +6,9 @@ import prisma from '@/lib/prisma';
 import DashboardShell from '@/components/layout/DashboardShell';
 import LinksManager from './LinksManager';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function LinksPage() {
   const user = await getCurrentUser();
   if (!user) {

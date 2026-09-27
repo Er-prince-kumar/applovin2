@@ -1,8 +1,12 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 import DashboardShell from '@/components/layout/DashboardShell';
 import AdTaskCenter from './AdTaskCenter';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata = {
   title: 'Ad Tasks & Earning Hub | MonetizeMax',
@@ -14,6 +18,17 @@ export default async function TasksPage() {
   if (!user) {
     redirect('/login');
   }
+
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const todayTasksCount = await prisma.transaction.count({
+    where: {
+      userId: user.id,
+      type: 'EARNING',
+      createdAt: { gte: startOfToday },
+    },
+  });
 
   return (
     <DashboardShell
@@ -29,6 +44,7 @@ export default async function TasksPage() {
             availableBalance: user.availableBalance,
             lifetimeEarnings: user.lifetimeEarnings,
           }}
+          initialAdsWatchedToday={todayTasksCount}
         />
       </div>
     </DashboardShell>

@@ -5,6 +5,9 @@ import prisma from '@/lib/prisma';
 import DashboardShell from '@/components/layout/DashboardShell';
 import ReferralsView from './ReferralsView';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function ReferralsPage() {
   const user = await getCurrentUser();
   if (!user) {

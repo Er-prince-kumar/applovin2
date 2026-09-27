@@ -4,6 +4,9 @@ import { getCurrentUser } from '@/lib/auth';
 import DashboardShell from '@/components/layout/DashboardShell';
 import SettingsView from './SettingsView';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function SettingsPage() {
   const user = await getCurrentUser();
   if (!user) {

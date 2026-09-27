@@ -16,6 +16,9 @@ import {
   CheckCircle,
 } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function EarningsPage() {
   const user = await getCurrentUser();
   if (!user) {

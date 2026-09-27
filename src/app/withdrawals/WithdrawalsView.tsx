@@ -145,21 +145,30 @@ export default function WithdrawalsView({
       localStorage.removeItem('linkearn_saved_bank_details');
     } catch {}
 
-    // 1. Instant fallback from user-specific localStorage
-    try {
-      const cached = localStorage.getItem(userStorageKey);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed && typeof parsed === 'object' && parsed.type) {
-          setSavedMethod((current) => current || parsed);
-          setUseSavedMethod(true);
+    // 1. If server already passed initialPayoutMethod, ensure it is cached locally
+    if (initialPayoutMethod) {
+      setSavedMethod(initialPayoutMethod);
+      setUseSavedMethod(true);
+      try {
+        localStorage.setItem(userStorageKey, JSON.stringify(initialPayoutMethod));
+      } catch {}
+    } else {
+      // 2. Instant fallback from user-specific localStorage
+      try {
+        const cached = localStorage.getItem(userStorageKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && typeof parsed === 'object' && parsed.type) {
+            setSavedMethod(parsed);
+            setUseSavedMethod(true);
+          }
         }
+      } catch (e) {
+        console.warn('Could not read cached bank details:', e);
       }
-    } catch (e) {
-      console.warn('Could not read cached bank details:', e);
     }
 
-    // 2. Fetch authoritative bank state from server for this logged-in user
+    // 3. Fetch authoritative bank state from server for this logged-in user
     async function fetchPayoutMethod() {
       try {
         const res = await fetch('/api/user/payout-method', {
@@ -175,12 +184,24 @@ export default function WithdrawalsView({
               localStorage.setItem(userStorageKey, JSON.stringify(data.payoutDetails));
             } catch {}
           } else {
-            // User does not have any saved payout method yet
-            setSavedMethod(null);
-            setUseSavedMethod(false);
-            try {
-              localStorage.removeItem(userStorageKey);
-            } catch {}
+            // Check if local cache has details that need syncing to the server
+            const localCached = localStorage.getItem(userStorageKey);
+            if (localCached) {
+              try {
+                const parsedLocal = JSON.parse(localCached);
+                if (parsedLocal && typeof parsedLocal === 'object' && parsedLocal.type) {
+                  setSavedMethod(parsedLocal);
+                  setUseSavedMethod(true);
+                  // Self-heal: send to server so DB permanently retains it
+                  fetch('/api/user/payout-method', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(parsedLocal),
+                  });
+                  return;
+                }
+              } catch {}
+            }
           }
         }
       } catch (err) {
@@ -189,7 +210,7 @@ export default function WithdrawalsView({
     }
 
     fetchPayoutMethod();
-  }, [userStorageKey]);
+  }, [userStorageKey, initialPayoutMethod]);
 
   // Synchronize form fields whenever savedMethod changes or modal opens
   const handleOpenBankModal = () => {

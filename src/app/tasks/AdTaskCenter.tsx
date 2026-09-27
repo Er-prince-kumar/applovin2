@@ -33,6 +33,7 @@ interface AdTaskCenterProps {
     availableBalance: number;
     lifetimeEarnings: number;
   };
+  initialAdsWatchedToday?: number;
 }
 
 const AD_CREATIVES = [
@@ -68,10 +69,15 @@ const AD_CREATIVES = [
   },
 ];
 
-export default function AdTaskCenter({ initialUser }: AdTaskCenterProps) {
+export default function AdTaskCenter({
+  initialUser,
+  initialAdsWatchedToday = 0,
+}: AdTaskCenterProps) {
   const { toast } = useToast();
+  const sessionKey = `linkearn_ad_session_${initialUser.id}`;
+
   const [balance, setBalance] = useState(initialUser.availableBalance);
-  const [adsWatchedToday, setAdsWatchedToday] = useState(6);
+  const [adsWatchedToday, setAdsWatchedToday] = useState(initialAdsWatchedToday);
   const [isAdPlaying, setIsAdPlaying] = useState(false);
   const [currentAdType, setCurrentAdType] = useState<'REWARDED_VIDEO' | 'INTERSTITIAL'>('REWARDED_VIDEO');
   const [adSecondsRemaining, setAdSecondsRemaining] = useState(30);
@@ -79,12 +85,38 @@ export default function AdTaskCenter({ initialUser }: AdTaskCenterProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [currentCreativeIndex, setCurrentCreativeIndex] = useState(0);
 
-  // Auto-Impression Stream state
+  // Auto-Impression Stream state - persisted across refreshes
   const [autoStreamActive, setAutoStreamActive] = useState(false);
   const [autoInterval, setAutoInterval] = useState(25);
   const [autoCountdown, setAutoCountdown] = useState(25);
-  const [autoCompletedCount, setAutoCompletedCount] = useState(0);
-  const [autoEarnedSession, setAutoEarnedSession] = useState(0);
+  const [autoCompletedCount, setAutoCompletedCount] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const val = localStorage.getItem(`${sessionKey}_count`);
+        return val ? parseInt(val, 10) : 0;
+      } catch {}
+    }
+    return 0;
+  });
+  const [autoEarnedSession, setAutoEarnedSession] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const val = localStorage.getItem(`${sessionKey}_earned`);
+        return val ? parseFloat(val) : 0;
+      } catch {}
+    }
+    return 0;
+  });
+
+  // Keep localStorage in sync with session earnings
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(`${sessionKey}_count`, String(autoCompletedCount));
+        localStorage.setItem(`${sessionKey}_earned`, String(autoEarnedSession));
+      } catch {}
+    }
+  }, [autoCompletedCount, autoEarnedSession, sessionKey]);
 
   // Lucky Spin & Scratch Card state
   const [spinning, setSpinning] = useState(false);
