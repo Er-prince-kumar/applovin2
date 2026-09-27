@@ -397,6 +397,7 @@ export default function WithdrawalsView({
 
     if (useSavedMethod && savedMethod) {
       finalMethod = savedMethod.type as any;
+      structuredPayload = savedMethod;
       if (savedMethod.type === 'BANK_TRANSFER') {
         finalDetails = `Bank: ${savedMethod.bankName} | A/C: ${savedMethod.accountNumber} | Holder: ${savedMethod.accountHolder} | IFSC: ${savedMethod.ifscCode}`;
       } else if (savedMethod.type === 'UPI') {
@@ -490,8 +491,8 @@ export default function WithdrawalsView({
           amount: numericAmount,
           paymentMethod: finalMethod,
           paymentDetails: finalDetails,
-          saveAsDefault,
-          structuredDetails: structuredPayload,
+          saveAsDefault: Boolean(saveAsDefault),
+          structuredDetails: structuredPayload || undefined,
           notes: notes.trim() || undefined,
         }),
       });
