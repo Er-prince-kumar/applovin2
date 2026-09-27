@@ -138,14 +138,27 @@ export default function WithdrawalsView({
 
   const { toast } = useToast();
 
-  // Persistent Hydration: Auto-sync bank account with user-scoped localStorage and API on mount
+  // Persistent Hydration: Auto-sync bank account with server & clean up any stale dummy bank data
   useEffect(() => {
-    // 0. Remove legacy un-scoped storage key
+    // 0. Remove legacy un-scoped storage key and wipe any dummy test bank data
     try {
       localStorage.removeItem('linkearn_saved_bank_details');
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('linkearn_saved_bank') || key.includes('payout'))) {
+          const val = localStorage.getItem(key) || '';
+          if (
+            val.includes('123456789012') ||
+            val.includes('SBIN0001234') ||
+            val.includes('State Bank of India')
+          ) {
+            localStorage.removeItem(key);
+          }
+        }
+      }
     } catch {}
 
-    // 1. If server already passed initialPayoutMethod, ensure it is cached locally
+    // 1. If server already passed initialPayoutMethod, use it; otherwise guarantee null
     if (initialPayoutMethod) {
       setSavedMethod(initialPayoutMethod);
       setUseSavedMethod(true);
@@ -153,22 +166,14 @@ export default function WithdrawalsView({
         localStorage.setItem(userStorageKey, JSON.stringify(initialPayoutMethod));
       } catch {}
     } else {
-      // 2. Instant fallback from user-specific localStorage
+      setSavedMethod(null);
+      setUseSavedMethod(false);
       try {
-        const cached = localStorage.getItem(userStorageKey);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (parsed && typeof parsed === 'object' && parsed.type) {
-            setSavedMethod(parsed);
-            setUseSavedMethod(true);
-          }
-        }
-      } catch (e) {
-        console.warn('Could not read cached bank details:', e);
-      }
+        localStorage.removeItem(userStorageKey);
+      } catch {}
     }
 
-    // 3. Fetch authoritative bank state from server for this logged-in user
+    // 2. Fetch authoritative bank state from server for this logged-in user
     async function fetchPayoutMethod() {
       try {
         const res = await fetch('/api/user/payout-method', {
@@ -184,24 +189,12 @@ export default function WithdrawalsView({
               localStorage.setItem(userStorageKey, JSON.stringify(data.payoutDetails));
             } catch {}
           } else {
-            // Check if local cache has details that need syncing to the server
-            const localCached = localStorage.getItem(userStorageKey);
-            if (localCached) {
-              try {
-                const parsedLocal = JSON.parse(localCached);
-                if (parsedLocal && typeof parsedLocal === 'object' && parsedLocal.type) {
-                  setSavedMethod(parsedLocal);
-                  setUseSavedMethod(true);
-                  // Self-heal: send to server so DB permanently retains it
-                  fetch('/api/user/payout-method', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(parsedLocal),
-                  });
-                  return;
-                }
-              } catch {}
-            }
+            // Server has no bank linked: guarantee null and remove local cache
+            setSavedMethod(null);
+            setUseSavedMethod(false);
+            try {
+              localStorage.removeItem(userStorageKey);
+            } catch {}
           }
         }
       } catch (err) {
@@ -226,6 +219,18 @@ export default function WithdrawalsView({
       setBankWalletNumber(savedMethod.walletNumber || '');
       setBankPaypalEmail(savedMethod.paypalEmail || '');
       setBankUsdtAddress(savedMethod.usdtAddress || '');
+    } else {
+      setBankFormType('BANK_TRANSFER');
+      setBankAccountHolder('');
+      setBankName('');
+      setBankAccountNumber('');
+      setBankConfirmAccountNumber('');
+      setBankIfscCode('');
+      setBankAccountType('Savings');
+      setBankUpiId('');
+      setBankWalletNumber('');
+      setBankPaypalEmail('');
+      setBankUsdtAddress('');
     }
     setBankModalError(null);
     setShowBankModal(true);
@@ -558,7 +563,13 @@ export default function WithdrawalsView({
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#141b27] via-[#101724] to-[#121927] border border-[#222d42] p-6 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 shadow-inner">
+            <div
+              className={`w-12 h-12 rounded-2xl ${
+                savedMethod
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                  : 'bg-gray-800/40 border-gray-700/50 text-gray-400'
+              } border flex items-center justify-center shrink-0 shadow-inner`}
+            >
               <Building2 className="w-6 h-6" />
             </div>
 
@@ -643,8 +654,7 @@ export default function WithdrawalsView({
                 </div>
               ) : (
                 <p className="text-xs text-gray-400 max-w-xl">
-                  Apna Bank Account (A/C No, IFSC, Bank Name) ya UPI ID add karein taaki aapka ad
-                  earning payout direct aapke bank me transfer ho sake.
+                  Koi default bank account linked nahi hai. Apne earnings ka withdrawal lene ke liye niche &apos;Add Bank Account&apos; button par click karke apna Bank Account ya UPI ID link karein.
                 </p>
               )}
             </div>
@@ -667,10 +677,23 @@ export default function WithdrawalsView({
             <button
               type="button"
               onClick={handleOpenBankModal}
-              className="px-4 py-2.5 rounded-xl bg-[#1d263b] hover:bg-[#283552] border border-[#2b3a5b] text-white font-semibold text-xs transition-all flex items-center gap-2 shadow-sm"
+              className={`px-4 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 shadow-sm ${
+                savedMethod
+                  ? 'bg-[#1d263b] hover:bg-[#283552] border border-[#2b3a5b] text-white'
+                  : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-gray-950 font-extrabold shadow-emerald-500/20 shadow-lg'
+              }`}
             >
-              <Edit3 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>{savedMethod ? 'Edit Bank Account' : 'Add Bank Account'}</span>
+              {savedMethod ? (
+                <>
+                  <Edit3 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Edit Bank Account</span>
+                </>
+              ) : (
+                <>
+                  <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                  <span>Add Bank Account</span>
+                </>
+              )}
             </button>
 
             <button
@@ -760,7 +783,7 @@ export default function WithdrawalsView({
                   placeholder={
                     bankFormType === 'UPI'
                       ? 'Optional: Enter name (or leave empty)'
-                      : 'e.g. Prince Kumar Singh'
+                      : 'Account holder full name'
                   }
                   className="w-full bg-[#090D16] border border-[#1E2638] rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
                 />
@@ -778,7 +801,7 @@ export default function WithdrawalsView({
                       required
                       value={bankName}
                       onChange={(e) => setBankName(e.target.value)}
-                      placeholder="e.g. State Bank of India, HDFC Bank, ICICI Bank"
+                      placeholder="Bank name (e.g. HDFC Bank, ICICI Bank, SBI)"
                       className="w-full bg-[#090D16] border border-[#1E2638] rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
@@ -823,7 +846,7 @@ export default function WithdrawalsView({
                         required
                         value={bankIfscCode}
                         onChange={(e) => setBankIfscCode(e.target.value.toUpperCase())}
-                        placeholder="e.g. SBIN0001234 or HDFC0000123"
+                        placeholder="11-digit IFSC code (e.g. HDFC0001234)"
                         className="w-full bg-[#090D16] border border-[#1E2638] rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 font-mono uppercase"
                       />
                     </div>
@@ -1103,7 +1126,7 @@ export default function WithdrawalsView({
                           required
                           value={reqBankName}
                           onChange={(e) => setReqBankName(e.target.value)}
-                          placeholder="e.g. State Bank of India, HDFC Bank"
+                          placeholder="Bank name (e.g. HDFC Bank, ICICI Bank, SBI)"
                           className="w-full bg-[#0D121C] border border-[#232D3F] rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
                         />
                       </div>

@@ -50,6 +50,13 @@ async function testBankFlow() {
   console.log('  ✓ Withdrawal request status:', withdrawRes.status);
   console.log('  ✓ Withdrawal ID:', withdrawData.withdrawal?.id);
 
+  // 5. Clean up bank account so no dummy bank stays behind
+  await fetch(`${baseUrl}/api/user/payout-method`, {
+    method: 'DELETE',
+    headers: { Cookie: cookie },
+  });
+  console.log('  ✓ Cleaned up test bank account');
+
   console.log('\n🎉 ALL BANK ACCOUNT & WITHDRAWAL TESTS PASSED!');
 }
 

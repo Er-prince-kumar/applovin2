@@ -42,6 +42,14 @@ async function testSaveForPrince() {
   });
 
   console.log('Read back:', readBack?.payoutDetails);
+  
+  // Clean up
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { payoutDetails: null },
+  });
+  console.log('Cleaned up Prince payoutDetails to null.');
+
   await prisma.$disconnect();
 }
 

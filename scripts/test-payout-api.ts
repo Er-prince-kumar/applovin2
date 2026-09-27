@@ -62,6 +62,16 @@ async function main() {
   console.log('Profile page status:', profileRes.status);
   console.log('Does Profile contain bank name "State Bank of India"?', profileHtml.includes('State Bank of India'));
   console.log('Does Profile contain "Connected"?', profileHtml.includes('Connected'));
+
+  // Clean up
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { payoutDetails: null },
+  });
+  const fs = await import('fs');
+  const path = await import('path');
+  fs.writeFileSync(path.resolve(process.cwd(), 'data', 'payout-methods.json'), JSON.stringify({}, null, 2));
+  console.log('Cleaned up test bank details.');
 }
 
 main().catch(console.error);
