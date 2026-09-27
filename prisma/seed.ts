@@ -139,13 +139,15 @@ async function main() {
 
   // 7. Demo Links
   console.log('Creating publisher links...');
+  const SMARTLINK_TARGET = 'https://missiondifferentyawn.com/fpfr463rs?key=3140b2ffd6dd3b01612eba7863e3dd71';
+
   const link1 = await prisma.link.create({
     data: {
       userId: demoPublisher.id,
       campaignId: cpcCampaign.id,
       name: 'Best Dev Tools 2026 Roundup',
       slug: 'dev-tools',
-      destinationUrl: 'https://github.com/trending',
+      destinationUrl: SMARTLINK_TARGET,
       description: 'Curated list of developer tools shared on Twitter & Dev.to',
       status: 'ACTIVE',
       totalClicks: 1420,
@@ -160,7 +162,7 @@ async function main() {
       campaignId: cpmCampaign.id,
       name: 'Top 10 Gaming Laptops Benchmark',
       slug: 'gaming-benchmark',
-      destinationUrl: 'https://store.steampowered.com',
+      destinationUrl: SMARTLINK_TARGET,
       description: 'Hardware reviews review guide link in YouTube video description',
       status: 'ACTIVE',
       totalClicks: 2890,
@@ -175,7 +177,7 @@ async function main() {
       campaignId: cpaCampaign.id,
       name: 'High Yield Savings Calculator Link',
       slug: 'smart-savings',
-      destinationUrl: 'https://investopedia.com',
+      destinationUrl: SMARTLINK_TARGET,
       description: 'Personal finance newsletter referral link',
       status: 'ACTIVE',
       totalClicks: 840,
@@ -190,9 +192,9 @@ async function main() {
       campaignId: cpcCampaign.id,
       name: 'Remote Work Master Guide',
       slug: 'remote-work',
-      destinationUrl: 'https://weworkremotely.com',
+      destinationUrl: SMARTLINK_TARGET,
       description: 'Job board monetization direct link',
-      status: 'PAUSED',
+      status: 'ACTIVE',
       totalClicks: 410,
       validClicks: 390,
       earnings: 31.20,

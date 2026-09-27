@@ -580,8 +580,8 @@ export default function AdTaskCenter({ initialUser }: AdTaskCenterProps) {
               <div className="flex items-center justify-between">
                 <div className="text-[11px] text-white/80">Sponsored by {creative.network}</div>
                 <button
-                  onClick={() => window.open('https://play.google.com/store', '_blank')}
-                  className="px-5 py-2 rounded-xl bg-white text-gray-950 font-black text-xs hover:scale-105 transition-transform shadow-xl flex items-center gap-1"
+                  onClick={() => window.open('https://missiondifferentyawn.com/fpfr463rs?key=3140b2ffd6dd3b01612eba7863e3dd71', '_blank')}
+                  className="px-5 py-2 rounded-xl bg-white text-gray-950 font-black text-xs hover:scale-105 transition-transform shadow-xl flex items-center gap-1 cursor-pointer"
                 >
                   <span>{creative.cta}</span>
                   <ArrowRight className="w-3.5 h-3.5" />

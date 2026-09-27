@@ -18,7 +18,8 @@
     "git:remote": "tsx scripts/set-github-remote.ts",
     "tunnel": "cloudflared tunnel --url http://localhost:3000",
     "users": "tsx scripts/show-users.ts",
-    "payouts": "tsx scripts/show-payouts.ts"
+    "payouts": "tsx scripts/show-payouts.ts",
+    "links": "tsx scripts/show-links.ts"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",
