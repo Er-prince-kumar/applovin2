@@ -117,7 +117,7 @@ export async function getCurrentUser() {
           _sum: { amount: true },
         }),
         prisma.withdrawal.aggregate({
-          where: { userId: user.id, status: 'APPROVED' },
+          where: { userId: user.id, status: { in: ['APPROVED', 'PAID'] } },
           _sum: { amount: true },
         }),
         prisma.withdrawal.aggregate({
@@ -131,20 +131,23 @@ export async function getCurrentUser() {
       const totalPending = Number((pendingW._sum.amount || 0).toFixed(2));
       const calculatedAvailable = Number(Math.max(0, totalEarned - totalDisbursed - totalPending).toFixed(2));
 
-      if (totalEarned > user.lifetimeEarnings || calculatedAvailable > user.availableBalance) {
-        const newLifetime = Math.max(user.lifetimeEarnings, totalEarned);
-        const newAvailable = Math.max(user.availableBalance, calculatedAvailable);
+      if (
+        user.lifetimeEarnings !== totalEarned ||
+        user.availableBalance !== calculatedAvailable ||
+        user.pendingBalance !== totalPending ||
+        user.totalWithdrawn !== totalDisbursed
+      ) {
         await prisma.user.update({
           where: { id: user.id },
           data: {
-            lifetimeEarnings: newLifetime,
-            availableBalance: newAvailable,
+            lifetimeEarnings: totalEarned,
+            availableBalance: calculatedAvailable,
             pendingBalance: totalPending,
             totalWithdrawn: totalDisbursed,
           },
         });
-        user.lifetimeEarnings = newLifetime;
-        user.availableBalance = newAvailable;
+        user.lifetimeEarnings = totalEarned;
+        user.availableBalance = calculatedAvailable;
         user.pendingBalance = totalPending;
         user.totalWithdrawn = totalDisbursed;
       }

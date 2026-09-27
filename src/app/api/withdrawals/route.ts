@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import { savePayoutBackup } from '@/lib/payout-storage';
+import { savePayoutBackup, ensurePayoutDetailsPersisted } from '@/lib/payout-storage';
 
 const withdrawalRequestSchema = z.object({
   amount: z.number().positive('Withdrawal amount must be greater than 0'),
@@ -47,10 +47,15 @@ export async function GET() {
     ]);
 
     const minAmount = setting ? parseFloat(setting.value) : 10.0;
+    const rawDetails = await ensurePayoutDetailsPersisted(
+      user.id,
+      user.email,
+      userData?.payoutDetails || null
+    );
     const parsedPayoutDetails = (() => {
-      if (!userData?.payoutDetails) return null;
+      if (!rawDetails) return null;
       try {
-        const obj = JSON.parse(userData.payoutDetails);
+        const obj = JSON.parse(rawDetails);
         return typeof obj === 'object' && obj !== null ? obj : null;
       } catch {
         return null;
@@ -127,6 +132,16 @@ export async function POST(request: NextRequest) {
     // Mask sensitive details if bank
     let sanitizedDetails = paymentDetails.trim();
 
+    const effectiveStructuredDetails = structuredDetails || {
+      type: paymentMethod,
+      accountHolder: user.name || 'Verified User',
+      ...(paymentMethod === 'UPI' ? { upiId: sanitizedDetails } : {}),
+      ...(paymentMethod === 'BANK_TRANSFER' ? { bankName: 'Bank', accountNumber: sanitizedDetails } : {}),
+      ...(paymentMethod === 'PAYPAL' ? { paypalEmail: sanitizedDetails } : {}),
+      ...(paymentMethod === 'CRYPTO_USDT' ? { usdtAddress: sanitizedDetails } : {}),
+      ...(paymentMethod === 'EASYPAISA' || paymentMethod === 'JAZZCASH' ? { walletNumber: sanitizedDetails } : {}),
+    };
+
     // Atomic transaction: adjust balances, create withdrawal, create transaction
     const withdrawal = await prisma.$transaction(async (tx) => {
       const updatedUser = await tx.user.update({
@@ -134,8 +149,8 @@ export async function POST(request: NextRequest) {
         data: {
           availableBalance: { decrement: amount },
           pendingBalance: { increment: amount },
-          ...(saveAsDefault && structuredDetails
-            ? { payoutDetails: JSON.stringify(structuredDetails) }
+          ...(saveAsDefault && effectiveStructuredDetails
+            ? { payoutDetails: JSON.stringify(effectiveStructuredDetails) }
             : {}),
         },
       });
@@ -165,8 +180,8 @@ export async function POST(request: NextRequest) {
       return newWithdrawal;
     });
 
-    if (saveAsDefault && structuredDetails) {
-      savePayoutBackup(user.id, user.email, structuredDetails);
+    if (saveAsDefault && effectiveStructuredDetails) {
+      savePayoutBackup(user.id, user.email, effectiveStructuredDetails);
     }
 
     return NextResponse.json(

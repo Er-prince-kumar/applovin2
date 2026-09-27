@@ -105,6 +105,12 @@ export default function WithdrawalsView({
           if (data?.withdrawals) {
             setWithdrawals(data.withdrawals);
           }
+          if (data?.savedPayoutMethod) {
+            setSavedMethod((current) => current || data.savedPayoutMethod);
+            try {
+              localStorage.setItem(userStorageKey, JSON.stringify(data.savedPayoutMethod));
+            } catch {}
+          }
         }
       } catch (e) {
         console.warn('Could not sync realtime balances:', e);
@@ -196,7 +202,7 @@ export default function WithdrawalsView({
       }
     } catch {}
 
-    // 1. If server already passed initialPayoutMethod, use it; otherwise guarantee null
+    // 1. If server already passed initialPayoutMethod, use it; otherwise check user-scoped localStorage
     if (initialPayoutMethod) {
       setSavedMethod(initialPayoutMethod);
       setUseSavedMethod(true);
@@ -204,10 +210,15 @@ export default function WithdrawalsView({
         localStorage.setItem(userStorageKey, JSON.stringify(initialPayoutMethod));
       } catch {}
     } else {
-      setSavedMethod(null);
-      setUseSavedMethod(false);
       try {
-        localStorage.removeItem(userStorageKey);
+        const cached = localStorage.getItem(userStorageKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && typeof parsed === 'object' && parsed.type) {
+            setSavedMethod(parsed);
+            setUseSavedMethod(true);
+          }
+        }
       } catch {}
     }
 
@@ -227,11 +238,22 @@ export default function WithdrawalsView({
               localStorage.setItem(userStorageKey, JSON.stringify(data.payoutDetails));
             } catch {}
           } else {
-            // Server has no bank linked: guarantee null and remove local cache
-            setSavedMethod(null);
-            setUseSavedMethod(false);
+            // Check if local cache has details that need syncing to the server
             try {
-              localStorage.removeItem(userStorageKey);
+              const localCached = localStorage.getItem(userStorageKey);
+              if (localCached) {
+                const parsedLocal = JSON.parse(localCached);
+                if (parsedLocal && typeof parsedLocal === 'object' && parsedLocal.type) {
+                  setSavedMethod(parsedLocal);
+                  setUseSavedMethod(true);
+                  // Self-heal: persist to server DB and file backup permanently
+                  fetch('/api/user/payout-method', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(parsedLocal),
+                  });
+                }
+              }
             } catch {}
           }
         }
@@ -512,8 +534,8 @@ export default function WithdrawalsView({
         try {
           localStorage.setItem(userStorageKey, JSON.stringify(structuredPayload));
         } catch {}
-        router.refresh();
       }
+      router.refresh();
 
       toast('Withdrawal request submitted for review!', 'success');
       setShowModal(false);

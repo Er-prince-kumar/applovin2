@@ -1,1 +1,14 @@
-{}
+{
+  "cmuiigzwk000hyxpgfnbxsbv0": {
+    "type": "UPI",
+    "accountHolder": "Prince Kumar",
+    "upiId": "princebxr@upi",
+    "updatedAt": "2026-09-27T20:18:58.408Z"
+  },
+  "princebxr2000@gmail.com": {
+    "type": "UPI",
+    "accountHolder": "Prince Kumar",
+    "upiId": "princebxr@upi",
+    "updatedAt": "2026-09-27T20:18:58.408Z"
+  }
+}
