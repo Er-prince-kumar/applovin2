@@ -16,11 +16,30 @@ import {
   Sparkles,
   Smartphone,
   Download,
+  ExternalLink,
 } from 'lucide-react';
 import { getCurrentUser } from '@/lib/auth';
+import { ADSTERRA_SMARTLINKS, getSmartlinkWithSubId } from '@/lib/adsterra';
 
 export default async function LandingPage() {
   const user = await getCurrentUser();
+
+  const smartlink1HeroUrl = getSmartlinkWithSubId(
+    ADSTERRA_SMARTLINKS.SMARTLINK_1.baseUrl,
+    'landing_hero_deals'
+  );
+  const smartlink1NavUrl = getSmartlinkWithSubId(
+    ADSTERRA_SMARTLINKS.SMARTLINK_1.baseUrl,
+    'landing_nav'
+  );
+  const smartlink1SectionUrl = getSmartlinkWithSubId(
+    ADSTERRA_SMARTLINKS.SMARTLINK_1.baseUrl,
+    'landing_partner_showcase'
+  );
+  const smartlink1FooterUrl = getSmartlinkWithSubId(
+    ADSTERRA_SMARTLINKS.SMARTLINK_1.baseUrl,
+    'landing_footer'
+  );
 
   return (
     <div className="min-h-screen bg-[#0B0F17] text-gray-100 flex flex-col selection:bg-emerald-500/30 selection:text-emerald-300">
@@ -36,14 +55,26 @@ export default async function LandingPage() {
             <a href="#features" className="hover:text-emerald-400 transition-colors">
               Features
             </a>
-            <a href="#models" className="hover:text-emerald-400 transition-colors">
-              Earning Models
+            <a href="#partner-offers" className="hover:text-emerald-400 transition-colors">
+              Partner Deals
             </a>
             <a href="#payouts" className="hover:text-emerald-400 transition-colors">
               Payouts
             </a>
             <a href="#faq" className="hover:text-emerald-400 transition-colors">
               FAQ
+            </a>
+            <a
+              href={smartlink1NavUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-amber-400 hover:text-amber-300 font-medium transition-colors flex items-center gap-1.5"
+              title="Sponsored Partner Offer (External Ad)"
+            >
+              <span>Partner Offers</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30">
+                Ad
+              </span>
             </a>
             <Link
               href="/download"
@@ -137,6 +168,36 @@ export default async function LandingPage() {
             </Link>
           </div>
 
+          {/* Sponsored Partner Deal Showcase Banner (Smartlink 1) */}
+          <div className="mt-8 max-w-xl mx-auto p-4 rounded-2xl bg-[#141A26]/90 border border-emerald-500/30 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-4 text-left shadow-xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-white">Featured Partner Deals</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                    Sponsored Ad
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Explore curated promotions & web offers from verified ad partners.
+                </p>
+              </div>
+            </div>
+            <a
+              href={smartlink1HeroUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all shrink-0 hover:scale-[1.02]"
+              title="Visit external sponsor deal"
+            >
+              <span>Explore Deals</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+
           {/* Social Proof Badges */}
           <div className="mt-14 pt-8 border-t border-[#1E2638]/60 grid grid-cols-2 sm:grid-cols-4 gap-6 text-left max-w-3xl mx-auto">
             <div>
@@ -204,6 +265,45 @@ export default async function LandingPage() {
                 Watch your ledger balance update in real time. Request withdrawals as soon as you reach
                 $10 via PayPal, Wire Transfer, Crypto USDT, or Payoneer.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Partner Deals Section (Smartlink 1 Placement) */}
+      <section id="partner-offers" className="py-16 bg-[#0B0F17] border-b border-[#1E2638] relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="bg-gradient-to-r from-[#131A26] via-[#151E2E] to-[#101622] border border-emerald-500/30 rounded-3xl p-8 sm:p-10 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-8">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs font-semibold uppercase tracking-wider mb-4">
+                <Sparkles className="w-3.5 h-3.5" />
+                Verified Adsterra Partner Network &bull; External Sponsor
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">
+                Live Sponsored Offers & Advertiser Campaigns
+              </h3>
+              <p className="text-sm text-gray-300 leading-relaxed mb-4">
+                Our traffic network connects genuine audiences with top-tier global advertisers. Click below to view live featured partner deals and multi-stream smartlink campaigns in real time.
+              </p>
+              <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400">
+                <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+                  <ShieldCheck className="w-4 h-4" />
+                  Policy-Compliant &bull; Safe Browsing Verified
+                </span>
+                <span>Opens external sponsor page in new tab</span>
+              </div>
+            </div>
+
+            <div className="shrink-0 w-full sm:w-auto">
+              <a
+                href={smartlink1SectionUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-extrabold text-sm transition-all shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2 hover:scale-[1.02]"
+              >
+                <span>Explore Sponsored Partner Deals (External Ad)</span>
+                <ExternalLink className="w-4 h-4 stroke-[2.5]" />
+              </a>
             </div>
           </div>
         </div>
@@ -431,6 +531,16 @@ export default async function LandingPage() {
               <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
               <span>Download App</span>
             </Link>
+            <a
+              href={smartlink1FooterUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-amber-400 text-gray-300 transition-colors flex items-center gap-1"
+              title="Sponsored Partner Deals (External Ad)"
+            >
+              <span>Partner Deals (Ad)</span>
+              <ExternalLink className="w-3 h-3 text-amber-400" />
+            </a>
             <Link href="/login" className="hover:text-white">
               Login
             </Link>

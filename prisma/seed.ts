@@ -137,21 +137,21 @@ async function main() {
     },
   });
 
-  // 7. Demo Links
-  console.log('Creating publisher links...');
+  // 7. Active Adsterra Smartlinks
+  console.log('Creating publisher Adsterra Smartlinks...');
 
   const link1 = await prisma.link.create({
     data: {
       userId: demoPublisher.id,
       campaignId: cpcCampaign.id,
-      name: 'Best Dev Tools 2026 Roundup',
-      slug: 'dev-tools',
-      destinationUrl: 'https://github.com/trending',
-      description: 'Curated list of developer tools shared on Twitter & Dev.to',
+      name: 'Adsterra Smartlink 1 (Landing Showcase)',
+      slug: 'direct',
+      destinationUrl: 'https://missiondifferentyawn.com/sjbtc6g7b?key=bb02b530b4c9fef30192815ad0da524d&sub_id=shortlink_direct',
+      description: 'Smartlink 1 - Featured Landing Page & Multi-Stream Partner Deal',
       status: 'ACTIVE',
-      totalClicks: 1420,
-      validClicks: 1350,
-      earnings: 108.00,
+      totalClicks: 0,
+      validClicks: 0,
+      earnings: 0.0,
     },
   });
 
@@ -159,14 +159,14 @@ async function main() {
     data: {
       userId: demoPublisher.id,
       campaignId: cpmCampaign.id,
-      name: 'Top 10 Gaming Laptops Benchmark',
-      slug: 'gaming-benchmark',
-      destinationUrl: 'https://ign.com',
-      description: 'Hardware reviews review guide link in YouTube video description',
+      name: 'Adsterra Smartlink 2 (Task Center & Video Sponsor)',
+      slug: 'ad',
+      destinationUrl: 'https://missiondifferentyawn.com/fpfr463rs?key=3140b2ffd6dd3b01612eba7863e3dd71&sub_id=shortlink_ad',
+      description: 'Smartlink 2 - Ad Task Center & Rewarded Ad Interactive CTA',
       status: 'ACTIVE',
-      totalClicks: 2890,
-      validClicks: 2710,
-      earnings: 67.75,
+      totalClicks: 0,
+      validClicks: 0,
+      earnings: 0.0,
     },
   });
 
@@ -174,29 +174,14 @@ async function main() {
     data: {
       userId: demoPublisher.id,
       campaignId: cpaCampaign.id,
-      name: 'High Yield Savings Calculator Link',
-      slug: 'smart-savings',
-      destinationUrl: 'https://investopedia.com',
-      description: 'Personal finance newsletter referral link',
+      name: 'Adsterra Smartlink 3 (Mobile Hub & Direct Offer)',
+      slug: 'smartlink',
+      destinationUrl: 'https://missiondifferentyawn.com/x2d4bg87?key=ee65df4dacf73fc2809f529d50aa9e91&sub_id=shortlink_smartlink',
+      description: 'Smartlink 3 - Mobile App Download Deals & Direct Publisher Hub',
       status: 'ACTIVE',
-      totalClicks: 840,
-      validClicks: 790,
-      earnings: 168.00,
-    },
-  });
-
-  const link4 = await prisma.link.create({
-    data: {
-      userId: demoPublisher.id,
-      campaignId: cpcCampaign.id,
-      name: 'Remote Work Master Guide',
-      slug: 'remote-work',
-      destinationUrl: 'https://weworkremotely.com',
-      description: 'Job board monetization direct link',
-      status: 'ACTIVE',
-      totalClicks: 410,
-      validClicks: 390,
-      earnings: 31.20,
+      totalClicks: 0,
+      validClicks: 0,
+      earnings: 0.0,
     },
   });
 
@@ -225,7 +210,7 @@ async function main() {
         ? 'Rapid frequency threshold near limit'
         : null;
 
-      const randomLink = [link1, link2, link3, link4][Math.floor(Math.random() * 4)];
+      const randomLink = [link1, link2, link3][Math.floor(Math.random() * 3)];
       const randomCountry = countries[Math.floor(Math.random() * countries.length)];
       const randomDevice = devices[Math.floor(Math.random() * devices.length)];
       const randomBrowser = browsers[Math.floor(Math.random() * browsers.length)];

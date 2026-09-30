@@ -17,6 +17,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import DownloadClientSection from './DownloadClientSection';
+import { ADSTERRA_SMARTLINKS, getSmartlinkWithSubId } from '@/lib/adsterra';
 
 export const metadata = {
   title: 'Download LinkEarn Mobile App | Android APK & iOS',
@@ -25,6 +26,19 @@ export const metadata = {
 };
 
 export default function DownloadPage() {
+  const smartlink3Url = getSmartlinkWithSubId(
+    ADSTERRA_SMARTLINKS.SMARTLINK_3.baseUrl,
+    'download_partner_apps'
+  );
+  const smartlink3NavUrl = getSmartlinkWithSubId(
+    ADSTERRA_SMARTLINKS.SMARTLINK_3.baseUrl,
+    'download_nav_offers'
+  );
+  const smartlink3FooterUrl = getSmartlinkWithSubId(
+    ADSTERRA_SMARTLINKS.SMARTLINK_3.baseUrl,
+    'download_footer_offers'
+  );
+
   return (
     <div className="min-h-screen bg-[#0B0F17] text-gray-100 flex flex-col selection:bg-emerald-500/30 selection:text-emerald-300">
       {/* Top Nav */}
@@ -39,6 +53,18 @@ export default function DownloadPage() {
             >
               Back to Home
             </Link>
+            <a
+              href={smartlink3NavUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1 font-medium"
+              title="Sponsored Partner Offers (External Ad)"
+            >
+              <span>Partner Offers</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-500/15 border border-amber-500/30">
+                Ad
+              </span>
+            </a>
             <Link
               href="/dashboard"
               className="px-4 py-2 rounded-xl bg-[#151B26] hover:bg-[#1E2638] border border-[#232D3F] text-xs font-semibold text-white transition-colors"
@@ -100,6 +126,36 @@ export default function DownloadPage() {
                   100% Error-Free Native Install
                 </span>
                 <span>Works on All Android & iOS Phones</span>
+              </div>
+            </div>
+
+            {/* Featured Partner Apps & Deals Promotion (Smartlink 3 Placement) */}
+            <div className="mt-6 bg-gradient-to-r from-[#141A26] to-[#101522] border border-amber-500/30 rounded-2xl p-6 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                    Sponsored App Offers &bull; Smartlink 3
+                  </span>
+                  <span className="text-[11px] text-gray-400 font-medium">Adsterra Verified</span>
+                </div>
+                <h4 className="text-base font-bold text-white">
+                  Featured Partner Mobile Apps & Offers
+                </h4>
+                <p className="text-xs text-gray-400 leading-relaxed max-w-md">
+                  Discover top-rated apps, games, and web tools from our verified global advertising partners.
+                </p>
+              </div>
+
+              <div className="shrink-0 w-full sm:w-auto">
+                <a
+                  href={smartlink3Url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-gray-950 font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02]"
+                >
+                  <span>Explore Partner App Deals (External Ad)</span>
+                  <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
+                </a>
               </div>
             </div>
           </div>
@@ -192,7 +248,27 @@ export default function DownloadPage() {
       </section>
 
       {/* Footer */}
-      <footer className="mt-auto border-t border-[#1E2638] bg-[#080B11] py-8 text-center text-xs text-gray-400">
+      <footer className="mt-auto border-t border-[#1E2638] bg-[#080B11] py-8 text-center text-xs text-gray-400 space-y-2">
+        <div className="flex items-center justify-center gap-6">
+          <Link href="/" className="hover:text-white transition-colors">
+            Home
+          </Link>
+          <a
+            href={smartlink3FooterUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1"
+          >
+            <span>Partner Offers (Ad)</span>
+            <ExternalLink className="w-3 h-3 text-amber-400" />
+          </a>
+          <Link href="/tasks" className="hover:text-white transition-colors">
+            Task Center
+          </Link>
+          <Link href="/dashboard" className="hover:text-white transition-colors">
+            Dashboard
+          </Link>
+        </div>
         <p>&copy; {new Date().getFullYear()} LinkEarn. Turn genuine traffic into measurable earnings.</p>
       </footer>
     </div>

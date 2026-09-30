@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
+import { ADSTERRA_SMARTLINKS, getSmartlinkWithSubId } from '@/lib/adsterra';
 
 interface AdTaskCenterProps {
   initialUser: {
@@ -37,14 +38,25 @@ interface AdTaskCenterProps {
   initialAdsWatchedToday?: number;
 }
 
+// Dedicated Smartlink 2 for Task Center Placements
+export const SMARTLINK_2_URL = getSmartlinkWithSubId(
+  ADSTERRA_SMARTLINKS.SMARTLINK_2.baseUrl,
+  'task_center_sponsor_stream'
+);
+
+export const SMARTLINK_2_CTA_URL = getSmartlinkWithSubId(
+  ADSTERRA_SMARTLINKS.SMARTLINK_2.baseUrl,
+  'task_center_rewarded_cta'
+);
+
 export const MONETAG_AD_LINKS = [
-  'https://missiondifferentyawn.com/x2d4bg87?key=ee65df4dacf73fc2809f529d50aa9e91',
-  'https://missiondifferentyawn.com/fpfr463rs?key=3140b2ffd6dd3b01612eba7863e3dd71',
-  'https://missiondifferentyawn.com/sjbtc6g7b?key=bb02b530b4c9fef30192815ad0da524d',
+  SMARTLINK_2_URL,
+  getSmartlinkWithSubId(ADSTERRA_SMARTLINKS.SMARTLINK_1.baseUrl, 'task_center_alt_stream1'),
+  getSmartlinkWithSubId(ADSTERRA_SMARTLINKS.SMARTLINK_3.baseUrl, 'task_center_alt_stream3'),
 ];
 
 export function getRandomAdLink(): string {
-  return MONETAG_AD_LINKS[Math.floor(Math.random() * MONETAG_AD_LINKS.length)];
+  return SMARTLINK_2_URL;
 }
 
 const AD_CREATIVES = [
@@ -55,9 +67,9 @@ const AD_CREATIVES = [
     installs: '10M+ Downloads',
     description: 'Build towers, recruit legendary heroes, and battle orc hordes!',
     color: 'from-amber-600 to-red-600',
-    cta: 'Install Now',
+    cta: 'Visit Sponsor Website (External Ad)',
     network: 'AppLovin MAX',
-    adUrl: 'https://missiondifferentyawn.com/x2d4bg87?key=ee65df4dacf73fc2809f529d50aa9e91',
+    adUrl: SMARTLINK_2_CTA_URL,
   },
   {
     title: 'TradePro: Crypto & Stocks',
@@ -66,9 +78,9 @@ const AD_CREATIVES = [
     installs: '5M+ Downloads',
     description: 'Zero commission trading on Bitcoin, Gold, and Tech Stocks.',
     color: 'from-blue-600 to-cyan-600',
-    cta: 'Claim $50 Bonus',
+    cta: 'Visit Sponsor Website (External Ad)',
     network: 'Unity Ads',
-    adUrl: 'https://missiondifferentyawn.com/fpfr463rs?key=3140b2ffd6dd3b01612eba7863e3dd71',
+    adUrl: SMARTLINK_2_CTA_URL,
   },
   {
     title: 'Cyberpunk Runner 2077',
@@ -77,9 +89,9 @@ const AD_CREATIVES = [
     installs: '2M+ Downloads',
     description: 'Sprint through futuristic neon cityscapes and dodge obstacles!',
     color: 'from-purple-600 to-pink-600',
-    cta: 'Play Free',
+    cta: 'Visit Sponsor Website (External Ad)',
     network: 'Google AdMob',
-    adUrl: 'https://missiondifferentyawn.com/sjbtc6g7b?key=bb02b530b4c9fef30192815ad0da524d',
+    adUrl: SMARTLINK_2_CTA_URL,
   },
 ];
 
@@ -142,7 +154,7 @@ export default function AdTaskCenter({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const autoTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Handle Rewarded Video Ad Play
+  // Handle Rewarded Video Ad Play (Real user intentional action: No unsolicited popups)
   function startRewardedVideo() {
     setCurrentAdType('REWARDED_VIDEO');
     setAdSecondsRemaining(30);
@@ -150,12 +162,9 @@ export default function AdTaskCenter({
     const nextIndex = (currentCreativeIndex + 1) % AD_CREATIVES.length;
     setCurrentCreativeIndex(nextIndex);
     setIsAdPlaying(true);
-    try {
-      window.open(AD_CREATIVES[nextIndex].adUrl || getRandomAdLink(), '_blank');
-    } catch {}
   }
 
-  // Handle Interstitial Ad Play
+  // Handle Interstitial Ad Play (Real user intentional action: No unsolicited popups)
   function startInterstitial() {
     setCurrentAdType('INTERSTITIAL');
     setAdSecondsRemaining(8);
@@ -163,9 +172,6 @@ export default function AdTaskCenter({
     const nextIndex = (currentCreativeIndex + 1) % AD_CREATIVES.length;
     setCurrentCreativeIndex(nextIndex);
     setIsAdPlaying(true);
-    try {
-      window.open(AD_CREATIVES[nextIndex].adUrl || getRandomAdLink(), '_blank');
-    } catch {}
   }
 
   // Ad Countdown Logic
@@ -248,16 +254,11 @@ export default function AdTaskCenter({
     };
   }, [autoStreamActive, autoInterval]);
 
-  // Handle Lucky Spin
+  // Handle Lucky Spin (No automatic popups)
   async function handleSpinWheel() {
     if (spinning) return;
     setSpinning(true);
     setSpinResult(null);
-
-    // Open real ad link on spin
-    try {
-      window.open(getRandomAdLink(), '_blank');
-    } catch {}
 
     // Watch mini ad requirement simulation
     setTimeout(async () => {
@@ -284,18 +285,13 @@ export default function AdTaskCenter({
     }, 3000);
   }
 
-  // Handle Scratch Card
+  // Handle Scratch Card (No automatic popups)
   async function handleScratch() {
     if (scratchRevealed) {
       setScratchRevealed(false);
       setScratchReward(null);
       return;
     }
-
-    // Open real ad link on scratch
-    try {
-      window.open(getRandomAdLink(), '_blank');
-    } catch {}
 
     const res = await fetch('/api/tasks/reward', {
       method: 'POST',
@@ -587,63 +583,82 @@ export default function AdTaskCenter({
         </div>
       </div>
 
-      {/* Direct Monetization Ad Links Section */}
+      {/* Direct Monetization Ad Links Section (Smartlink 2 Placement) */}
       <div className="bg-[#151B26] border border-[#232D3F] rounded-2xl p-6 shadow-xl space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1E2638] pb-4">
           <div>
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <Zap className="w-5 h-5 text-amber-400" />
-              <span>Direct Monetization Ad Links</span>
+              <span>Sponsored Partner Ad Streams</span>
             </h3>
             <p className="text-xs text-gray-400">
-              Click any ad link below to view sponsor ads directly and generate instant impressions.
+              Verified Adsterra smartlinks. Click below to view external sponsor promotions directly.
             </p>
           </div>
           <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 border border-amber-500/20 text-amber-300 self-start sm:self-auto">
-            3 Active Ad Streams
+            Smartlink 2 Active
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {MONETAG_AD_LINKS.map((link, idx) => (
-            <div
-              key={idx}
-              className="bg-[#0D121C] border border-[#1E2638] hover:border-emerald-500/40 rounded-xl p-4 flex flex-col justify-between space-y-3 transition-all group"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                    Ad Stream #{idx + 1}
-                  </span>
-                  <span className="text-[11px] font-mono text-gray-400">High CPM</span>
-                </div>
-                <h4 className="text-sm font-bold text-white mb-1">
-                  {idx === 0
-                    ? 'MissionDifferent Ad Stream 1'
-                    : idx === 1
-                    ? 'MissionDifferent Pop Ad 2'
-                    : 'MissionDifferent Smartlink 3'}
-                </h4>
-                <p className="text-xs text-gray-400 truncate font-mono text-[11px]">
-                  {link}
-                </p>
+          <div className="bg-[#0D121C] border border-emerald-500/40 rounded-xl p-4 flex flex-col justify-between space-y-3 transition-all group md:col-span-2">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                  Primary Stream &bull; Smartlink 2
+                </span>
+                <span className="text-[11px] font-mono text-emerald-400 font-semibold">External Sponsor Ad</span>
               </div>
-
-              <div className="pt-2 border-t border-[#1E2638] flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    window.open(link, '_blank');
-                    claimReward('AUTO_IMPRESSION', 15);
-                  }}
-                  className="flex-1 py-2 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all cursor-pointer"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Click to View Ad</span>
-                </button>
-              </div>
+              <h4 className="text-base font-bold text-white mb-1">
+                Adsterra High-Yield Partner Ad Stream
+              </h4>
+              <p className="text-xs text-gray-400 leading-relaxed">
+                Connects directly to verified advertising partner offers. Fully compliant with real user intentional clicks.
+              </p>
             </div>
-          ))}
+
+            <div className="pt-2 border-t border-[#1E2638] flex items-center gap-3">
+              <a
+                href={SMARTLINK_2_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => claimReward('AUTO_IMPRESSION', 15)}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 transition-all cursor-pointer hover:scale-[1.01]"
+              >
+                <span>Visit Sponsored Partner Ad (External Ad)</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+
+          <div className="bg-[#0D121C] border border-[#1E2638] rounded-xl p-4 flex flex-col justify-between space-y-3">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                  Direct Hub
+                </span>
+                <span className="text-[11px] font-mono text-gray-400">Shortlink</span>
+              </div>
+              <h4 className="text-sm font-bold text-white mb-1">
+                Publisher Ad Route
+              </h4>
+              <p className="text-xs text-gray-400 text-[11px]">
+                Monetized routing via <code className="text-emerald-400">/go/ad</code>
+              </p>
+            </div>
+
+            <div className="pt-2 border-t border-[#1E2638] flex items-center gap-2">
+              <a
+                href="/go/ad"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2.5 px-3 rounded-xl bg-[#1C2433] hover:bg-[#253044] text-white border border-[#2E3C56] font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Test Shortlink Route</span>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -687,9 +702,7 @@ export default function AdTaskCenter({
           {/* Ad Creative Video Simulation Body */}
           <div className="my-auto max-w-lg mx-auto w-full text-center space-y-6">
             <div
-              onClick={() => window.open(creative.adUrl || getRandomAdLink(), '_blank')}
-              className={`w-full aspect-video rounded-3xl bg-gradient-to-tr ${creative.color} p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden border border-white/20 cursor-pointer`}
-              title="Click to visit sponsor ad"
+              className={`w-full aspect-video rounded-3xl bg-gradient-to-tr ${creative.color} p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden border border-white/20`}
             >
               <div className="text-left text-white space-y-1">
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 uppercase tracking-wider">
@@ -705,16 +718,15 @@ export default function AdTaskCenter({
 
               <div className="flex items-center justify-between">
                 <div className="text-[11px] text-white/80">Sponsored by {creative.network}</div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.open(creative.adUrl || getRandomAdLink(), '_blank');
-                  }}
-                  className="px-5 py-2 rounded-xl bg-white text-gray-950 font-black text-xs hover:scale-105 transition-transform shadow-xl flex items-center gap-1 cursor-pointer"
+                <a
+                  href={SMARTLINK_2_CTA_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded-xl bg-white hover:bg-gray-100 text-gray-950 font-black text-xs hover:scale-105 transition-transform shadow-xl flex items-center gap-1.5 cursor-pointer"
                 >
-                  <span>{creative.cta}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+                  <span>Visit Sponsor Website (External Ad)</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
               </div>
             </div>
 
