@@ -1,18 +1,28 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import prisma from './prisma';
 
 const DATA_DIR = path.resolve(process.cwd(), 'data');
 const BACKUP_FILE = path.join(DATA_DIR, 'payout-methods.json');
 const SECONDARY_BACKUP = path.join(process.cwd(), '.payout-backup.json');
+const SYSTEM_BACKUP_DIR = path.join(os.homedir(), '.linkearn-storage');
+const SYSTEM_BACKUP_FILE = path.join(SYSTEM_BACKUP_DIR, 'payout-methods.json');
 
-function ensureDataDir() {
+function ensureDataDirs() {
   try {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
   } catch (err) {
     console.error('Error ensuring payout data directory:', err);
+  }
+  try {
+    if (!fs.existsSync(SYSTEM_BACKUP_DIR)) {
+      fs.mkdirSync(SYSTEM_BACKUP_DIR, { recursive: true });
+    }
+  } catch (err) {
+    console.error('Error ensuring system payout directory:', err);
   }
 }
 
@@ -21,10 +31,21 @@ interface BackupStore {
 }
 
 function readBackupStore(): BackupStore {
-  ensureDataDir();
+  ensureDataDirs();
   let merged: BackupStore = {};
 
-  // Read secondary backup first if available
+  // 1. Read from system-level homedir storage (immune to any git checkout, git pull, or code changes)
+  try {
+    if (fs.existsSync(SYSTEM_BACKUP_FILE)) {
+      const rawSys = fs.readFileSync(SYSTEM_BACKUP_FILE, 'utf-8');
+      const parsedSys = JSON.parse(rawSys);
+      if (parsedSys && typeof parsedSys === 'object') {
+        merged = { ...merged, ...parsedSys };
+      }
+    }
+  } catch {}
+
+  // 2. Read secondary gitignored workspace backup
   try {
     if (fs.existsSync(SECONDARY_BACKUP)) {
       const rawSec = fs.readFileSync(SECONDARY_BACKUP, 'utf-8');
@@ -35,7 +56,7 @@ function readBackupStore(): BackupStore {
     }
   } catch {}
 
-  // Read primary backup and merge
+  // 3. Read primary project backup
   try {
     if (fs.existsSync(BACKUP_FILE)) {
       const rawPrim = fs.readFileSync(BACKUP_FILE, 'utf-8');
@@ -50,19 +71,28 @@ function readBackupStore(): BackupStore {
 }
 
 function writeBackupStore(store: BackupStore) {
-  ensureDataDir();
+  ensureDataDirs();
   const serialized = JSON.stringify(store, null, 2);
 
+  // 1. System homedir storage (indestructible across code updates)
   try {
-    fs.writeFileSync(BACKUP_FILE, serialized, 'utf-8');
+    fs.writeFileSync(SYSTEM_BACKUP_FILE, serialized, 'utf-8');
   } catch (err) {
-    console.error('Error writing primary payout backup store:', err);
+    console.error('Error writing system payout backup:', err);
   }
 
+  // 2. Secondary gitignored workspace backup
   try {
     fs.writeFileSync(SECONDARY_BACKUP, serialized, 'utf-8');
   } catch (err) {
     console.error('Error writing secondary payout backup store:', err);
+  }
+
+  // 3. Primary workspace backup
+  try {
+    fs.writeFileSync(BACKUP_FILE, serialized, 'utf-8');
+  } catch (err) {
+    console.error('Error writing primary payout backup store:', err);
   }
 }
 

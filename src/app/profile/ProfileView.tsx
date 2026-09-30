@@ -36,6 +36,8 @@ export default function ProfileView({ user }: ProfileViewProps) {
   });
 
   useEffect(() => {
+    const userStorageKey = 'linkearn_bank_account_' + user.id;
+
     async function loadBank() {
       try {
         const res = await fetch('/api/user/payout-method', { cache: 'no-store' });
@@ -43,14 +45,35 @@ export default function ProfileView({ user }: ProfileViewProps) {
           const data = await res.json();
           if (data?.payoutDetails) {
             setBankInfo(data.payoutDetails);
+            try {
+              localStorage.setItem(userStorageKey, JSON.stringify(data.payoutDetails));
+            } catch {}
           } else {
-            setBankInfo(null);
+            // Check client storage to self-heal
+            try {
+              const cached = localStorage.getItem(userStorageKey);
+              if (cached) {
+                const parsed = JSON.parse(cached);
+                if (parsed && typeof parsed === 'object' && parsed.type) {
+                  setBankInfo(parsed);
+                  fetch('/api/user/payout-method', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(parsed),
+                  }).catch(() => {});
+                }
+              } else {
+                setBankInfo(null);
+              }
+            } catch {
+              setBankInfo(null);
+            }
           }
         }
       } catch {}
     }
     loadBank();
-  }, []);
+  }, [user.id]);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');

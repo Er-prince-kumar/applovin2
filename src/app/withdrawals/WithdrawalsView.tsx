@@ -184,7 +184,6 @@ export default function WithdrawalsView({
 
   // Persistent Hydration: Auto-sync bank account with server and local persistence
   useEffect(() => {
-
     // 1. Authoritative initialization from server-passed state
     if (initialPayoutMethod) {
       setSavedMethod(initialPayoutMethod);
@@ -193,11 +192,30 @@ export default function WithdrawalsView({
         localStorage.setItem(userStorageKey, JSON.stringify(initialPayoutMethod));
       } catch {}
     } else {
-      setSavedMethod(null);
-      setUseSavedMethod(false);
+      // If server returned null (e.g. after code update, git pull, or DB reset),
+      // check if this user previously added their bank account on this device
       try {
-        localStorage.removeItem(userStorageKey);
-      } catch {}
+        const cached = localStorage.getItem(userStorageKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && typeof parsed === 'object' && parsed.type) {
+            setSavedMethod(parsed);
+            setUseSavedMethod(true);
+            // Self-heal: send back to server so DB and disk backups are restored
+            fetch('/api/user/payout-method', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(parsed),
+            }).catch(() => {});
+          }
+        } else {
+          setSavedMethod(null);
+          setUseSavedMethod(false);
+        }
+      } catch {
+        setSavedMethod(null);
+        setUseSavedMethod(false);
+      }
     }
 
     // 2. Fetch authoritative bank state from server for this logged-in user
@@ -216,11 +234,22 @@ export default function WithdrawalsView({
               localStorage.setItem(userStorageKey, JSON.stringify(data.payoutDetails));
             } catch {}
           } else {
-            // New user or unlinked: ensure no bank is displayed by default
-            setSavedMethod(null);
-            setUseSavedMethod(false);
+            // Server returned null: check if client has cached details to self-heal
             try {
-              localStorage.removeItem(userStorageKey);
+              const localCached = localStorage.getItem(userStorageKey);
+              if (localCached) {
+                const parsedLocal = JSON.parse(localCached);
+                if (parsedLocal && typeof parsedLocal === 'object' && parsedLocal.type) {
+                  setSavedMethod(parsedLocal);
+                  setUseSavedMethod(true);
+                  // Resurrect to server permanently
+                  fetch('/api/user/payout-method', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(parsedLocal),
+                  }).catch(() => {});
+                }
+              }
             } catch {}
           }
         }
