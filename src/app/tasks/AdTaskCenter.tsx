@@ -22,6 +22,7 @@ import {
   Layers,
   Clock,
   Coins,
+  ExternalLink,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
@@ -36,6 +37,16 @@ interface AdTaskCenterProps {
   initialAdsWatchedToday?: number;
 }
 
+export const MONETAG_AD_LINKS = [
+  'https://missiondifferentyawn.com/x2d4bg87?key=ee65df4dacf73fc2809f529d50aa9e91',
+  'https://missiondifferentyawn.com/fpfr463rs?key=3140b2ffd6dd3b01612eba7863e3dd71',
+  'https://missiondifferentyawn.com/sjbtc6g7b?key=bb02b530b4c9fef30192815ad0da524d',
+];
+
+export function getRandomAdLink(): string {
+  return MONETAG_AD_LINKS[Math.floor(Math.random() * MONETAG_AD_LINKS.length)];
+}
+
 const AD_CREATIVES = [
   {
     title: 'Kingdom Rush: Tower Defense',
@@ -46,6 +57,7 @@ const AD_CREATIVES = [
     color: 'from-amber-600 to-red-600',
     cta: 'Install Now',
     network: 'AppLovin MAX',
+    adUrl: 'https://missiondifferentyawn.com/x2d4bg87?key=ee65df4dacf73fc2809f529d50aa9e91',
   },
   {
     title: 'TradePro: Crypto & Stocks',
@@ -56,6 +68,7 @@ const AD_CREATIVES = [
     color: 'from-blue-600 to-cyan-600',
     cta: 'Claim $50 Bonus',
     network: 'Unity Ads',
+    adUrl: 'https://missiondifferentyawn.com/fpfr463rs?key=3140b2ffd6dd3b01612eba7863e3dd71',
   },
   {
     title: 'Cyberpunk Runner 2077',
@@ -66,6 +79,7 @@ const AD_CREATIVES = [
     color: 'from-purple-600 to-pink-600',
     cta: 'Play Free',
     network: 'Google AdMob',
+    adUrl: 'https://missiondifferentyawn.com/sjbtc6g7b?key=bb02b530b4c9fef30192815ad0da524d',
   },
 ];
 
@@ -133,8 +147,12 @@ export default function AdTaskCenter({
     setCurrentAdType('REWARDED_VIDEO');
     setAdSecondsRemaining(30);
     setCanCloseAd(false);
-    setCurrentCreativeIndex((prev) => (prev + 1) % AD_CREATIVES.length);
+    const nextIndex = (currentCreativeIndex + 1) % AD_CREATIVES.length;
+    setCurrentCreativeIndex(nextIndex);
     setIsAdPlaying(true);
+    try {
+      window.open(AD_CREATIVES[nextIndex].adUrl || getRandomAdLink(), '_blank');
+    } catch {}
   }
 
   // Handle Interstitial Ad Play
@@ -142,8 +160,12 @@ export default function AdTaskCenter({
     setCurrentAdType('INTERSTITIAL');
     setAdSecondsRemaining(8);
     setCanCloseAd(false);
-    setCurrentCreativeIndex((prev) => (prev + 1) % AD_CREATIVES.length);
+    const nextIndex = (currentCreativeIndex + 1) % AD_CREATIVES.length;
+    setCurrentCreativeIndex(nextIndex);
     setIsAdPlaying(true);
+    try {
+      window.open(AD_CREATIVES[nextIndex].adUrl || getRandomAdLink(), '_blank');
+    } catch {}
   }
 
   // Ad Countdown Logic
@@ -232,6 +254,11 @@ export default function AdTaskCenter({
     setSpinning(true);
     setSpinResult(null);
 
+    // Open real ad link on spin
+    try {
+      window.open(getRandomAdLink(), '_blank');
+    } catch {}
+
     // Watch mini ad requirement simulation
     setTimeout(async () => {
       try {
@@ -264,6 +291,11 @@ export default function AdTaskCenter({
       setScratchReward(null);
       return;
     }
+
+    // Open real ad link on scratch
+    try {
+      window.open(getRandomAdLink(), '_blank');
+    } catch {}
 
     const res = await fetch('/api/tasks/reward', {
       method: 'POST',
@@ -555,6 +587,66 @@ export default function AdTaskCenter({
         </div>
       </div>
 
+      {/* Direct Monetization Ad Links Section */}
+      <div className="bg-[#151B26] border border-[#232D3F] rounded-2xl p-6 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1E2638] pb-4">
+          <div>
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <Zap className="w-5 h-5 text-amber-400" />
+              <span>Direct Monetization Ad Links</span>
+            </h3>
+            <p className="text-xs text-gray-400">
+              Click any ad link below to view sponsor ads directly and generate instant impressions.
+            </p>
+          </div>
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 border border-amber-500/20 text-amber-300 self-start sm:self-auto">
+            3 Active Ad Streams
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {MONETAG_AD_LINKS.map((link, idx) => (
+            <div
+              key={idx}
+              className="bg-[#0D121C] border border-[#1E2638] hover:border-emerald-500/40 rounded-xl p-4 flex flex-col justify-between space-y-3 transition-all group"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                    Ad Stream #{idx + 1}
+                  </span>
+                  <span className="text-[11px] font-mono text-gray-400">High CPM</span>
+                </div>
+                <h4 className="text-sm font-bold text-white mb-1">
+                  {idx === 0
+                    ? 'MissionDifferent Ad Stream 1'
+                    : idx === 1
+                    ? 'MissionDifferent Pop Ad 2'
+                    : 'MissionDifferent Smartlink 3'}
+                </h4>
+                <p className="text-xs text-gray-400 truncate font-mono text-[11px]">
+                  {link}
+                </p>
+              </div>
+
+              <div className="pt-2 border-t border-[#1E2638] flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.open(link, '_blank');
+                    claimReward('AUTO_IMPRESSION', 15);
+                  }}
+                  className="flex-1 py-2 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all cursor-pointer"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Click to View Ad</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* FULL-SCREEN REALISTIC INTERACTIVE AD OVERLAY */}
       {isAdPlaying && (
         <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col justify-between p-4 sm:p-8 animate-in fade-in duration-300">
@@ -595,7 +687,9 @@ export default function AdTaskCenter({
           {/* Ad Creative Video Simulation Body */}
           <div className="my-auto max-w-lg mx-auto w-full text-center space-y-6">
             <div
-              className={`w-full aspect-video rounded-3xl bg-gradient-to-tr ${creative.color} p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden border border-white/20`}
+              onClick={() => window.open(creative.adUrl || getRandomAdLink(), '_blank')}
+              className={`w-full aspect-video rounded-3xl bg-gradient-to-tr ${creative.color} p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden border border-white/20 cursor-pointer`}
+              title="Click to visit sponsor ad"
             >
               <div className="text-left text-white space-y-1">
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 uppercase tracking-wider">
@@ -612,7 +706,10 @@ export default function AdTaskCenter({
               <div className="flex items-center justify-between">
                 <div className="text-[11px] text-white/80">Sponsored by {creative.network}</div>
                 <button
-                  onClick={() => window.open('https://play.google.com/store', '_blank')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.open(creative.adUrl || getRandomAdLink(), '_blank');
+                  }}
                   className="px-5 py-2 rounded-xl bg-white text-gray-950 font-black text-xs hover:scale-105 transition-transform shadow-xl flex items-center gap-1 cursor-pointer"
                 >
                   <span>{creative.cta}</span>
