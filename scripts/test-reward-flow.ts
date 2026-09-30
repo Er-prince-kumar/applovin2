@@ -14,7 +14,7 @@ async function testRewardFlow() {
   console.log(`Prince initial balance: $${initialBal.toFixed(4)}`);
 
   const rewardAmount = 0.05; // 1 Rewarded Video
-  const adNetwork = 'AppLovin MAX';
+  const adNetwork = 'Adsterra Smartlink';
   const taskType = 'REWARDED_VIDEO';
 
   const updatedUser = await prisma.user.update({

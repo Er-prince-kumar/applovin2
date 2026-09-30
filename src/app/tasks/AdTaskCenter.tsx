@@ -68,7 +68,7 @@ const AD_CREATIVES = [
     description: 'Build towers, recruit legendary heroes, and battle orc hordes!',
     color: 'from-amber-600 to-red-600',
     cta: 'Visit Sponsor Website (External Ad)',
-    network: 'AppLovin MAX',
+    network: 'Adsterra Sponsor',
     adUrl: SMARTLINK_2_CTA_URL,
   },
   {
@@ -79,7 +79,7 @@ const AD_CREATIVES = [
     description: 'Zero commission trading on Bitcoin, Gold, and Tech Stocks.',
     color: 'from-blue-600 to-cyan-600',
     cta: 'Visit Sponsor Website (External Ad)',
-    network: 'Unity Ads',
+    network: 'Featured Partner',
     adUrl: SMARTLINK_2_CTA_URL,
   },
   {
@@ -90,7 +90,7 @@ const AD_CREATIVES = [
     description: 'Sprint through futuristic neon cityscapes and dodge obstacles!',
     color: 'from-purple-600 to-pink-600',
     cta: 'Visit Sponsor Website (External Ad)',
-    network: 'Google AdMob',
+    network: 'Verified Sponsor',
     adUrl: SMARTLINK_2_CTA_URL,
   },
 ];
@@ -269,7 +269,7 @@ export default function AdTaskCenter({
           body: JSON.stringify({
             taskType: 'LUCKY_SPIN',
             durationSeconds: 15,
-            adNetwork: 'AppLovin MAX',
+            adNetwork: 'Adsterra Network',
           }),
         });
         const data = await res.json();
@@ -299,7 +299,7 @@ export default function AdTaskCenter({
       body: JSON.stringify({
         taskType: 'SCRATCH_CARD',
         durationSeconds: 10,
-        adNetwork: 'Unity Ads',
+        adNetwork: 'Adsterra Network',
       }),
     });
     const data = await res.json();
@@ -321,7 +321,7 @@ export default function AdTaskCenter({
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
             <Sparkles className="w-3.5 h-3.5" />
-            AppLovin & Unity Rewarded Ad Center
+            Adsterra Rewarded Ad Center
           </div>
           <h2 className="text-2xl font-extrabold text-white">Watch Ads & Earn Instant Cash</h2>
           <p className="text-xs text-gray-400 mt-1">
@@ -358,17 +358,17 @@ export default function AdTaskCenter({
               <span className="text-emerald-400 font-extrabold">Active (Safe 1.2% CTR)</span>
             </div>
             <div className="text-[11px] text-gray-400">
-              Cooldown delays and randomized user agents enabled to protect AppLovin & Unity ad accounts from invalid traffic.
+              Cooldown delays and randomized user agents enabled to protect publisher ad streams from invalid traffic.
             </div>
           </div>
         </div>
 
         <Link
-          href="/ad-network"
+          href="/links"
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1B2436] hover:bg-[#25324A] text-gray-300 hover:text-white border border-[#2B3952] text-xs font-medium transition-colors"
         >
           <Settings className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Configure Ad Unit IDs</span>
+          <span>View My Smartlinks</span>
         </Link>
       </div>
 
@@ -390,7 +390,7 @@ export default function AdTaskCenter({
 
             <h3 className="text-lg font-bold text-white mb-1">Watch Rewarded Video</h3>
             <p className="text-xs text-gray-400 mb-6 leading-relaxed">
-              Watch a full 30-second AppLovin or Unity mobile game ad to unlock an instant cash reward.
+              Watch a full 30-second sponsored video ad to unlock an instant cash reward.
             </p>
           </div>
 
@@ -544,41 +544,41 @@ export default function AdTaskCenter({
           </button>
         </div>
 
-        {/* 6. Ad Network SDK Overview */}
+        {/* 6. Active Adsterra Smartlinks Status */}
         <div className="bg-[#151B26] border border-[#232D3F] rounded-2xl p-6 shadow-xl flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                <Smartphone className="w-6 h-6" />
+                <Zap className="w-6 h-6 text-emerald-400" />
               </div>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                Active Networks
+                Active Smartlinks
               </span>
             </div>
 
-            <h3 className="text-lg font-bold text-white mb-2">Connected Ad Networks</h3>
+            <h3 className="text-lg font-bold text-white mb-2">Adsterra Smartlinks</h3>
             <div className="space-y-2 text-xs text-gray-300 mb-6">
               <div className="flex justify-between items-center bg-[#0D121C] p-2 rounded-lg border border-[#1E2638]">
-                <span>AppLovin MAX</span>
-                <span className="text-emerald-400 font-semibold">● Ready</span>
+                <span>Smartlink 1 (Landing)</span>
+                <span className="text-emerald-400 font-semibold">● Active</span>
               </div>
               <div className="flex justify-between items-center bg-[#0D121C] p-2 rounded-lg border border-[#1E2638]">
-                <span>Unity Ads</span>
-                <span className="text-emerald-400 font-semibold">● Ready</span>
+                <span>Smartlink 2 (Task Hub)</span>
+                <span className="text-emerald-400 font-semibold">● Active</span>
               </div>
               <div className="flex justify-between items-center bg-[#0D121C] p-2 rounded-lg border border-[#1E2638]">
-                <span>Google AdMob</span>
-                <span className="text-emerald-400 font-semibold">● Ready</span>
+                <span>Smartlink 3 (Mobile Hub)</span>
+                <span className="text-emerald-400 font-semibold">● Active</span>
               </div>
             </div>
           </div>
 
           <Link
-            href="/ad-network"
+            href="/links"
             className="w-full py-3 px-4 rounded-xl bg-[#1C2433] hover:bg-[#253044] text-white border border-[#2E3C56] font-bold text-sm transition-all flex items-center justify-center gap-2"
           >
             <Settings className="w-4 h-4 text-gray-400" />
-            <span>Manage Ad Unit Keys</span>
+            <span>Manage Smartlinks</span>
           </Link>
         </div>
       </div>
@@ -750,7 +750,7 @@ export default function AdTaskCenter({
 
           {/* Footer Notice */}
           <div className="text-center text-[10px] text-gray-400">
-            LinkEarn Rewarded Video Engine &bull; Compliant with AppLovin MAX & Unity Ad Policies
+            LinkEarn Rewarded Video Engine &bull; Compliant with Adsterra Publisher Policies
           </div>
         </div>
       )}

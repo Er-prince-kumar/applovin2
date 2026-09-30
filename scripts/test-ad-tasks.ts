@@ -46,7 +46,7 @@ async function testAdTasks() {
       amount: rewardAmount,
       balanceAfter: updatedUser.availableBalance,
       type: 'EARNING',
-      description: 'Ad Task Reward - Rewarded Video (AppLovin MAX)',
+      description: 'Ad Task Reward - Rewarded Video (Adsterra Smartlink)',
     },
   });
 

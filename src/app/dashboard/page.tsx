@@ -153,22 +153,16 @@ export default async function DashboardPage() {
               Watch Rewarded Ads & Earn Instant Cash
             </h2>
             <p className="text-gray-300 text-xs max-w-xl">
-              Earn $0.05 per video ad, $0.02 per interstitial, plus Auto-Impression streamer and Lucky Spin Wheel rewards powered by AppLovin MAX & Unity Ads.
+              Earn $0.05 per video ad, $0.02 per interstitial, plus Auto-Impression streamer and Lucky Spin Wheel rewards powered by Adsterra Smartlinks.
             </p>
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
             <Link
-              href="/ad-network"
-              className="px-3.5 py-2 rounded-xl bg-[#1E2638] hover:bg-[#28334b] text-gray-300 font-semibold text-xs transition-colors"
-            >
-              SDK Keys
-            </Link>
-            <Link
               href="/tasks"
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs transition-all shadow-lg shadow-blue-500/25"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-gray-950 font-extrabold text-xs transition-all shadow-lg shadow-emerald-500/25"
             >
-              <Play className="w-3.5 h-3.5 fill-white" />
+              <Play className="w-3.5 h-3.5 fill-gray-950" />
               <span>Ad Task Hub</span>
             </Link>
           </div>

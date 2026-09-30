@@ -9,8 +9,8 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export const metadata = {
-  title: 'Ad Tasks & Earning Hub | MonetizeMax',
-  description: 'Earn real cash by watching Rewarded Video Ads, Interstitials, Spin & Win, and Auto-Impression Streamer powered by AppLovin MAX & Unity Ads.',
+  title: 'Ad Tasks & Earning Hub | LinkEarn',
+  description: 'Earn real cash by watching Rewarded Video Ads, Interstitials, Spin & Win, and Auto-Impression Streamer powered by Adsterra Smartlinks.',
 };
 
 export default async function TasksPage() {

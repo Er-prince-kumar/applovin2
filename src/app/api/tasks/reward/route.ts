@@ -13,7 +13,7 @@ const rewardRequestSchema = z.object({
     'SCRATCH_CARD',
   ]),
   durationSeconds: z.number().min(0),
-  adNetwork: z.string().optional().default('AppLovin MAX'),
+  adNetwork: z.string().optional().default('Adsterra Smartlink'),
 });
 
 // Reward amounts in USD
