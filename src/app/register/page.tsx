@@ -40,13 +40,15 @@ function RegisterForm() {
 
     setLoading(true);
 
+    const cleanEmail = email.toLowerCase().trim();
+
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name,
-          email,
+          name: name.trim(),
+          email: cleanEmail,
           password,
           referralCode: referralCode.trim() || undefined,
         }),
@@ -57,11 +59,19 @@ function RegisterForm() {
         throw new Error(data.error || 'Failed to create account');
       }
 
+      // Store vault token and remembered email in client storage
+      if (data.vaultToken) {
+        try {
+          localStorage.setItem(`linkearn_vault_${cleanEmail}`, data.vaultToken);
+          localStorage.setItem('linkearn_last_vault', data.vaultToken);
+        } catch {}
+      }
+      try {
+        localStorage.setItem('linkearn_remembered_email', cleanEmail);
+      } catch {}
+
       // Prompt app install on dashboard
       sessionStorage.setItem('showInstallPromptAfterLogin', 'true');
-      try {
-        localStorage.setItem('linkearn_remembered_email', email.trim());
-      } catch {}
 
       // Navigate cleanly to dashboard
       window.location.href = '/dashboard';

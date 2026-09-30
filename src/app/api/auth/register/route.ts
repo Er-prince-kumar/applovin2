@@ -8,10 +8,11 @@ import {
   setSessionCookie,
 } from '@/lib/auth';
 import { passwordComplexitySchema } from '@/lib/password';
+import { saveUserBackup, createUserVaultToken } from '@/lib/user-storage';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
+  email: z.string().transform((v) => v.toLowerCase().trim()).pipe(z.string().email('Please enter a valid email address')),
   password: passwordComplexitySchema,
   referralCode: z.string().optional().nullable(),
 });
@@ -104,7 +105,24 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create JWT session token
+    // 1. Save user to permanent multi-tier backup
+    saveUserBackup({
+      id: newUser.id,
+      name: newUser.name,
+      email: normalizedEmail,
+      passwordHash,
+      role: newUser.role,
+      status: newUser.status,
+      referralCode: newUser.referralCode,
+      referredById: newUser.referredById,
+      availableBalance: 0,
+      lifetimeEarnings: 0,
+    });
+
+    // 2. Generate signed user vault token for cross-lambda user resurrection
+    const vaultToken = await createUserVaultToken(newUser);
+
+    // 3. Create JWT session token
     const token = await createSessionToken({
       userId: newUser.id,
       email: newUser.email,
@@ -129,16 +147,35 @@ export async function POST(request: NextRequest) {
           role: newUser.role,
           referralCode: newUser.referralCode,
         },
+        vaultToken,
       },
       { status: 201 }
     );
 
-    // Explicitly set cookie on NextResponse headers for 100% reliability
+    // 30 days permanent login session
     response.cookies.set('linkearn_session', token, {
       httpOnly: true,
       secure: false, // Compatible with localhost, HTTP tunnels, and HTTPS
       sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60, // 30 days permanent login session
+      maxAge: 30 * 24 * 60 * 60,
+      path: '/',
+    });
+
+    // 365 days signed account vault cookie for cross-container resurrection
+    const safeEmailKey = normalizedEmail.replace(/[^a-z0-9]/g, '_');
+    response.cookies.set(`linkearn_vault_${safeEmailKey}`, vaultToken, {
+      httpOnly: false,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 365 * 24 * 60 * 60,
+      path: '/',
+    });
+
+    response.cookies.set('linkearn_last_vault', vaultToken, {
+      httpOnly: false,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 365 * 24 * 60 * 60,
       path: '/',
     });
 

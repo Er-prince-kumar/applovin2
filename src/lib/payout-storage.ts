@@ -30,7 +30,16 @@ interface BackupStore {
   [identifier: string]: any;
 }
 
+let cachedPayoutStore: BackupStore | null = null;
+let lastPayoutCacheTime = 0;
+const CACHE_TTL_MS = 10000; // 10s in-memory cache to keep server blazing fast
+
 function readBackupStore(): BackupStore {
+  const now = Date.now();
+  if (cachedPayoutStore && now - lastPayoutCacheTime < CACHE_TTL_MS) {
+    return cachedPayoutStore;
+  }
+
   ensureDataDirs();
   let merged: BackupStore = {};
 
@@ -67,11 +76,16 @@ function readBackupStore(): BackupStore {
     }
   } catch {}
 
+  cachedPayoutStore = merged;
+  lastPayoutCacheTime = now;
   return merged;
 }
 
 function writeBackupStore(store: BackupStore) {
   ensureDataDirs();
+  cachedPayoutStore = store;
+  lastPayoutCacheTime = Date.now();
+
   const serialized = JSON.stringify(store, null, 2);
 
   // 1. System homedir storage (indestructible across code updates)

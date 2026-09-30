@@ -38,17 +38,20 @@ export default async function DashboardPage() {
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-  // 1. Fetch user's links
-  const userLinks = await prisma.link.findMany({
-    where: { userId: user.id },
-    include: { campaign: true },
-    orderBy: { earnings: 'desc' },
-  });
-
-  const linkIds = userLinks.map((l) => l.id);
-
-  // 2. Aggregate Today's & Month's Earnings
-  const [todayEarningsResult, monthEarningsResult, referralEarningsResult] = await Promise.all([
+  // 1. Parallelize all user-scoped database queries
+  const [
+    userLinks,
+    todayEarningsResult,
+    monthEarningsResult,
+    referralEarningsResult,
+    recentTransactions,
+    pastEarnings,
+  ] = await Promise.all([
+    prisma.link.findMany({
+      where: { userId: user.id },
+      include: { campaign: true },
+      orderBy: { earnings: 'desc' },
+    }),
     prisma.earning.aggregate({
       where: { userId: user.id, createdAt: { gte: startOfToday } },
       _sum: { amount: true },
@@ -61,7 +64,18 @@ export default async function DashboardPage() {
       where: { referrerId: user.id },
       _sum: { amount: true },
     }),
+    prisma.transaction.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+    }),
+    prisma.earning.findMany({
+      where: { userId: user.id, createdAt: { gte: sevenDaysAgo } },
+      select: { createdAt: true, amount: true },
+    }),
   ]);
+
+  const linkIds = userLinks.map((l) => l.id);
 
   let todayEarnings = todayEarningsResult._sum.amount || 0;
   let monthEarnings = monthEarningsResult._sum.amount || 0;
@@ -75,34 +89,28 @@ export default async function DashboardPage() {
     monthEarnings = Number((user.lifetimeEarnings || user.availableBalance).toFixed(2));
   }
 
-  // 3. Traffic & Clicks
-  const [clicksCount, validClicksCount, conversionsCount] = await Promise.all([
-    prisma.clickEvent.count({ where: { linkId: { in: linkIds } } }),
-    prisma.clickEvent.count({ where: { linkId: { in: linkIds }, status: 'VALID' } }),
-    prisma.conversion.count({ where: { linkId: { in: linkIds }, status: 'APPROVED' } }),
-  ]);
+  // 2. Parallelize traffic & click analytics (only if user has created links)
+  const [clicksCount, validClicksCount, conversionsCount, uniqueVisitorsRaw, pastClicks] =
+    linkIds.length > 0
+      ? await Promise.all([
+          prisma.clickEvent.count({ where: { linkId: { in: linkIds } } }),
+          prisma.clickEvent.count({ where: { linkId: { in: linkIds }, status: 'VALID' } }),
+          prisma.conversion.count({ where: { linkId: { in: linkIds }, status: 'APPROVED' } }),
+          prisma.clickEvent.findMany({
+            where: { linkId: { in: linkIds } },
+            select: { visitorHash: true },
+            distinct: ['visitorHash'],
+          }),
+          prisma.clickEvent.findMany({
+            where: { linkId: { in: linkIds }, createdAt: { gte: sevenDaysAgo } },
+            select: { createdAt: true, visitorHash: true },
+          }),
+        ])
+      : [0, 0, 0, [], []];
 
-  const uniqueVisitorsRaw = await prisma.clickEvent.findMany({
-    where: { linkId: { in: linkIds } },
-    select: { visitorHash: true },
-    distinct: ['visitorHash'],
-  });
   const uniqueVisitors = uniqueVisitorsRaw.length;
-
   const conversionRate = validClicksCount > 0 ? (conversionsCount / validClicksCount) * 100 : 0;
   const activeLinksCount = userLinks.filter((l) => l.status === 'ACTIVE').length;
-
-  // 4. Time series for charts (Last 7 Days)
-  const [pastClicks, pastEarnings] = await Promise.all([
-    prisma.clickEvent.findMany({
-      where: { linkId: { in: linkIds }, createdAt: { gte: sevenDaysAgo } },
-      select: { createdAt: true, visitorHash: true },
-    }),
-    prisma.earning.findMany({
-      where: { userId: user.id, createdAt: { gte: sevenDaysAgo } },
-      select: { createdAt: true, amount: true },
-    }),
-  ]);
 
   // Aggregate past 7 days into daily chart data
   const chartDays: Record<string, { date: string; earnings: number; clicks: number; visitors: Set<string> }> = {};
@@ -133,13 +141,6 @@ export default async function DashboardPage() {
     clicks: item.clicks,
     visitors: item.visitors.size,
   }));
-
-  // 5. Recent Transactions
-  const recentTransactions = await prisma.transaction.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: 'desc' },
-    take: 5,
-  });
 
   const topLinks = userLinks.slice(0, 4);
 

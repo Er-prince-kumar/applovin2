@@ -148,7 +148,11 @@ export default function WithdrawalsView({
     };
     window.addEventListener('linkearn_balance_update', handleBalanceUpdate);
 
-    const interval = setInterval(syncRealtimeBalances, 8000);
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && !document.hidden) {
+        syncRealtimeBalances();
+      }
+    }, 30000);
 
     return () => {
       window.removeEventListener('focus', handleFocus);

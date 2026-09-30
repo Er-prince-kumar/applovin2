@@ -42,6 +42,7 @@ dev.db-journal
 *.db-shm
 .payout-backup.json
 .earnings-backup.json
+.users-backup.json
 !prisma/dev.db
 
 # vercel

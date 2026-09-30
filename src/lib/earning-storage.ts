@@ -65,7 +65,16 @@ function mergeStoreFromFile(filePath: string, targetStore: BackupStore) {
   }
 }
 
+let cachedEarningsStore: BackupStore | null = null;
+let lastEarningsCacheTime = 0;
+const CACHE_TTL_MS = 10000; // 10s cache to avoid blocking disk I/O
+
 export function readEarningsStore(): BackupStore {
+  const now = Date.now();
+  if (cachedEarningsStore && now - lastEarningsCacheTime < CACHE_TTL_MS) {
+    return cachedEarningsStore;
+  }
+
   ensureDataDirs();
   const merged: BackupStore = {};
 
@@ -81,11 +90,16 @@ export function readEarningsStore(): BackupStore {
   // 4. Read tmp backup (useful in serverless environments)
   mergeStoreFromFile(TMP_BACKUP_FILE, merged);
 
+  cachedEarningsStore = merged;
+  lastEarningsCacheTime = now;
   return merged;
 }
 
 export function writeEarningsStore(store: BackupStore) {
   ensureDataDirs();
+  cachedEarningsStore = store;
+  lastEarningsCacheTime = Date.now();
+
   const serialized = JSON.stringify(store, null, 2);
 
   // 1. System homedir storage

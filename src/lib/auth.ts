@@ -4,6 +4,7 @@ import { SignJWT, jwtVerify } from 'jose';
 import prisma from './prisma';
 import { ensurePayoutDetailsPersisted } from './payout-storage';
 import { ensureBalancePersisted, saveBalanceBackup } from './earning-storage';
+import { getUserBackup, verifyUserVaultToken, resurrectUserIntoDb } from './user-storage';
 
 const SESSION_COOKIE_NAME = 'linkearn_session';
 const JWT_SECRET = new TextEncoder().encode(
@@ -91,7 +92,7 @@ export async function getCurrentUser() {
     const payload = await verifySessionToken(token);
     if (!payload?.userId) return null;
 
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { id: payload.userId },
       select: {
         id: true,
@@ -109,6 +110,45 @@ export async function getCurrentUser() {
         createdAt: true,
       },
     });
+
+    // If user not in database (e.g. cold start / new serverless lambda), resurrect from multi-tier backup or vault cookie
+    if (!user) {
+      let backupRecord = getUserBackup(payload.userId) || (payload.email ? getUserBackup(payload.email) : null);
+      if (!backupRecord && payload.email) {
+        try {
+          const cookieStore = await cookies();
+          const safeEmailKey = payload.email.toLowerCase().trim().replace(/[^a-z0-9]/g, '_');
+          const vaultCookie =
+            cookieStore.get(`linkearn_vault_${safeEmailKey}`)?.value ||
+            cookieStore.get('linkearn_last_vault')?.value;
+          if (vaultCookie) {
+            backupRecord = await verifyUserVaultToken(vaultCookie);
+          }
+        } catch {}
+      }
+
+      if (backupRecord) {
+        await resurrectUserIntoDb(backupRecord);
+        user = await prisma.user.findUnique({
+          where: { id: backupRecord.id },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+            status: true,
+            referralCode: true,
+            referredById: true,
+            availableBalance: true,
+            pendingBalance: true,
+            lifetimeEarnings: true,
+            totalWithdrawn: true,
+            payoutDetails: true,
+            createdAt: true,
+          },
+        });
+      }
+    }
 
     if (!user || user.status === 'SUSPENDED') {
       return null;

@@ -37,11 +37,23 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
 
+    const cleanEmail = email.toLowerCase().trim();
+    let clientVault: string | null = null;
+    try {
+      clientVault =
+        localStorage.getItem(`linkearn_vault_${cleanEmail}`) ||
+        localStorage.getItem('linkearn_last_vault');
+    } catch {}
+
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), password }),
+        body: JSON.stringify({
+          email: cleanEmail,
+          password,
+          clientVault: clientVault || undefined,
+        }),
       });
 
       const data = await res.json();
@@ -49,10 +61,17 @@ export default function LoginPage() {
         throw new Error(data.error || 'Invalid email or password');
       }
 
-      // Persist email in browser for 1-tap future logins
+      // Persist vault token and email in browser for 1-tap future logins
+      if (data.vaultToken) {
+        try {
+          localStorage.setItem(`linkearn_vault_${cleanEmail}`, data.vaultToken);
+          localStorage.setItem('linkearn_last_vault', data.vaultToken);
+        } catch {}
+      }
+
       try {
         if (rememberMe) {
-          localStorage.setItem('linkearn_remembered_email', email.trim());
+          localStorage.setItem('linkearn_remembered_email', cleanEmail);
         } else {
           localStorage.removeItem('linkearn_remembered_email');
         }
