@@ -4,14 +4,12 @@ import prisma from './prisma';
 
 const DATA_DIR = path.resolve(process.cwd(), 'data');
 const BACKUP_FILE = path.join(DATA_DIR, 'payout-methods.json');
+const SECONDARY_BACKUP = path.join(process.cwd(), '.payout-backup.json');
 
 function ensureDataDir() {
   try {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    if (!fs.existsSync(BACKUP_FILE)) {
-      fs.writeFileSync(BACKUP_FILE, JSON.stringify({}, null, 2), 'utf-8');
     }
   } catch (err) {
     console.error('Error ensuring payout data directory:', err);
@@ -24,20 +22,47 @@ interface BackupStore {
 
 function readBackupStore(): BackupStore {
   ensureDataDir();
+  let merged: BackupStore = {};
+
+  // Read secondary backup first if available
   try {
-    const raw = fs.readFileSync(BACKUP_FILE, 'utf-8');
-    return JSON.parse(raw);
-  } catch (err) {
-    return {};
-  }
+    if (fs.existsSync(SECONDARY_BACKUP)) {
+      const rawSec = fs.readFileSync(SECONDARY_BACKUP, 'utf-8');
+      const parsedSec = JSON.parse(rawSec);
+      if (parsedSec && typeof parsedSec === 'object') {
+        merged = { ...merged, ...parsedSec };
+      }
+    }
+  } catch {}
+
+  // Read primary backup and merge
+  try {
+    if (fs.existsSync(BACKUP_FILE)) {
+      const rawPrim = fs.readFileSync(BACKUP_FILE, 'utf-8');
+      const parsedPrim = JSON.parse(rawPrim);
+      if (parsedPrim && typeof parsedPrim === 'object') {
+        merged = { ...merged, ...parsedPrim };
+      }
+    }
+  } catch {}
+
+  return merged;
 }
 
 function writeBackupStore(store: BackupStore) {
   ensureDataDir();
+  const serialized = JSON.stringify(store, null, 2);
+
   try {
-    fs.writeFileSync(BACKUP_FILE, JSON.stringify(store, null, 2), 'utf-8');
+    fs.writeFileSync(BACKUP_FILE, serialized, 'utf-8');
   } catch (err) {
-    console.error('Error writing payout backup store:', err);
+    console.error('Error writing primary payout backup store:', err);
+  }
+
+  try {
+    fs.writeFileSync(SECONDARY_BACKUP, serialized, 'utf-8');
+  } catch (err) {
+    console.error('Error writing secondary payout backup store:', err);
   }
 }
 

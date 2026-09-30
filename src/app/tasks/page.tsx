@@ -26,6 +26,7 @@ export default async function TasksPage() {
     where: {
       userId: user.id,
       type: 'EARNING',
+      description: { contains: 'Reward for watching' },
       createdAt: { gte: startOfToday },
     },
   });

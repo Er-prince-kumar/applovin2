@@ -27,27 +27,7 @@ async function syncAllUserPayouts() {
     }
   }
 
-  // Also ensure publisher@linkearn.com has a pre-configured valid payout method in backup
-  const publisher = users.find((u) => u.email === 'publisher@linkearn.com');
-  if (publisher && !publisher.payoutDetails) {
-    const defaultPayout = {
-      type: 'BANK_TRANSFER',
-      accountHolder: 'Alex Rivera',
-      bankName: 'HDFC Bank',
-      accountNumber: '987654321098',
-      ifscCode: 'HDFC0001234',
-      accountType: 'Savings',
-      updatedAt: new Date().toISOString(),
-    };
-    savePayoutBackup(publisher.id, publisher.email, defaultPayout);
-    await prisma.user.update({
-      where: { id: publisher.id },
-      data: { payoutDetails: JSON.stringify(defaultPayout) },
-    });
-    console.log('✅ Initialized permanent bank backup for publisher@linkearn.com');
-  }
-
-  console.log(`\n🎉 Permanent backup complete! Total backed up accounts: ${syncedCount + 1}`);
+  console.log(`\n🎉 Permanent backup complete! Total backed up accounts: ${syncedCount}`);
   await prisma.$disconnect();
 }
 

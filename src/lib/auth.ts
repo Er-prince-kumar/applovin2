@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import prisma from './prisma';
@@ -68,8 +68,23 @@ export async function clearSessionCookie() {
 
 export async function getCurrentUser() {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+    let token: string | undefined;
+
+    try {
+      const cookieStore = await cookies();
+      token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+    } catch {}
+
+    if (!token) {
+      try {
+        const headerStore = await headers();
+        const authHeader = headerStore.get('authorization');
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+          token = authHeader.substring(7).trim();
+        }
+      } catch {}
+    }
+
     if (!token) return null;
 
     const payload = await verifySessionToken(token);
@@ -98,61 +113,12 @@ export async function getCurrentUser() {
       return null;
     }
 
+    // Auto-heal payout details from permanent backup if not present in user row
     if (!user.payoutDetails) {
       const restored = await ensurePayoutDetailsPersisted(user.id, user.email, null);
       if (restored) {
         user.payoutDetails = restored;
       }
-    }
-
-    // Dynamic Yield Reconciliation: Ensure availableBalance & lifetimeEarnings reflect all link and task earnings
-    try {
-      const [linkAgg, taskAgg, approvedW, pendingW] = await Promise.all([
-        prisma.link.aggregate({
-          where: { userId: user.id },
-          _sum: { earnings: true },
-        }),
-        prisma.earning.aggregate({
-          where: { userId: user.id, linkId: null },
-          _sum: { amount: true },
-        }),
-        prisma.withdrawal.aggregate({
-          where: { userId: user.id, status: { in: ['APPROVED', 'PAID'] } },
-          _sum: { amount: true },
-        }),
-        prisma.withdrawal.aggregate({
-          where: { userId: user.id, status: { in: ['PENDING', 'PROCESSING'] } },
-          _sum: { amount: true },
-        }),
-      ]);
-
-      const totalEarned = Number(((linkAgg._sum.earnings || 0) + (taskAgg._sum.amount || 0)).toFixed(2));
-      const totalDisbursed = Number((approvedW._sum.amount || 0).toFixed(2));
-      const totalPending = Number((pendingW._sum.amount || 0).toFixed(2));
-      const calculatedAvailable = Number(Math.max(0, totalEarned - totalDisbursed - totalPending).toFixed(2));
-
-      if (
-        user.lifetimeEarnings !== totalEarned ||
-        user.availableBalance !== calculatedAvailable ||
-        user.pendingBalance !== totalPending ||
-        user.totalWithdrawn !== totalDisbursed
-      ) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            lifetimeEarnings: totalEarned,
-            availableBalance: calculatedAvailable,
-            pendingBalance: totalPending,
-            totalWithdrawn: totalDisbursed,
-          },
-        });
-        user.lifetimeEarnings = totalEarned;
-        user.availableBalance = calculatedAvailable;
-        user.pendingBalance = totalPending;
-        user.totalWithdrawn = totalDisbursed;
-      }
-    } catch (e) {
-      console.warn('Yield reconciliation error:', e);
     }
 
     return user;

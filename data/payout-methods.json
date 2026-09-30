@@ -10,5 +10,17 @@
     "accountHolder": "Prince Kumar",
     "upiId": "princebxr@upi",
     "updatedAt": "2026-09-27T20:18:58.408Z"
+  },
+  "cmuih99ux0017yx50ai6yrkm5": {
+    "type": "UPI",
+    "upiId": "nik98765@paytm",
+    "accountHolder": "Nik Kumar",
+    "updatedAt": "2026-09-30T15:35:11.572Z"
+  },
+  "heybikash11@gmail.com": {
+    "type": "UPI",
+    "upiId": "nik98765@paytm",
+    "accountHolder": "Nik Kumar",
+    "updatedAt": "2026-09-30T15:35:11.572Z"
   }
 }

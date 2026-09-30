@@ -29,22 +29,10 @@ function getDatabaseUrl(): string {
       }
 
       if (!fs.existsSync(tmpDbPath)) {
-        const candidatePaths = [
-          path.join(process.cwd(), 'prisma', 'dev.db'),
-          path.join('/var/task', 'prisma', 'dev.db'),
-          path.resolve('prisma/dev.db'),
-        ];
-
-        let copied = false;
-        for (const candidate of candidatePaths) {
-          if (fs.existsSync(candidate)) {
-            fs.copyFileSync(candidate, tmpDbPath);
-            copied = true;
-            break;
-          }
-        }
-
-        if (!copied) {
+        const srcDbPath = path.join(process.cwd(), 'prisma', 'dev.db');
+        if (fs.existsSync(srcDbPath)) {
+          fs.copyFileSync(srcDbPath, tmpDbPath);
+        } else {
           fs.writeFileSync(tmpDbPath, '');
         }
       }

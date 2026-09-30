@@ -182,25 +182,8 @@ export default function WithdrawalsView({
 
   const { toast } = useToast();
 
-  // Persistent Hydration: Auto-sync bank account with server & clean up any stale dummy bank data
+  // Persistent Hydration: Auto-sync bank account with server and local persistence
   useEffect(() => {
-    // 0. Remove legacy un-scoped storage key and wipe any dummy test bank data
-    try {
-      localStorage.removeItem('linkearn_saved_bank_details');
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (key.startsWith('linkearn_saved_bank') || key.includes('payout'))) {
-          const val = localStorage.getItem(key) || '';
-          if (
-            val.includes('123456789012') ||
-            val.includes('SBIN0001234') ||
-            val.includes('State Bank of India')
-          ) {
-            localStorage.removeItem(key);
-          }
-        }
-      }
-    } catch {}
 
     // 1. If server already passed initialPayoutMethod, use it; otherwise check user-scoped localStorage
     if (initialPayoutMethod) {
