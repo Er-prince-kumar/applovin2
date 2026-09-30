@@ -154,6 +154,30 @@ async function runTests() {
         where: { userId: linkOwner.id, referenceId: earningResult?.earningId },
       });
       assert(tx !== null, 'Immutable transaction entry logged in database ledger');
+
+      // Clean up test click, transaction, and earning so database amounts stay clean
+      if (tx) {
+        await prisma.transaction.deleteMany({ where: { id: tx.id } });
+      }
+      if (earningResult?.earningId) {
+        await prisma.earning.deleteMany({ where: { id: earningResult.earningId } });
+      }
+      await prisma.clickEvent.deleteMany({ where: { id: testClick.id } });
+      await prisma.user.update({
+        where: { id: linkOwner.id },
+        data: {
+          availableBalance: initialBalance,
+          lifetimeEarnings: initialBalance,
+        },
+      });
+      await prisma.link.update({
+        where: { id: demoLink.id },
+        data: {
+          totalClicks: 0,
+          validClicks: 0,
+          earnings: 0.0,
+        },
+      });
     }
 
     // ----------------------------------------------------
