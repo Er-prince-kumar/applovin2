@@ -168,7 +168,7 @@ export default async function LandingPage() {
             </Link>
           </div>
 
-          {/* Sponsored Partner Deal Showcase Banner (Smartlink 1) */}
+          {/* Sponsored Partner Resource Showcase Banner (Smartlink 1) */}
           <div className="mt-8 max-w-xl mx-auto p-4 rounded-2xl bg-[#141A26]/90 border border-emerald-500/30 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-4 text-left shadow-xl">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
@@ -176,13 +176,13 @@ export default async function LandingPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-white">Featured Partner Deals</span>
+                  <span className="text-sm font-bold text-white">Curated Partner Resource</span>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                    Sponsored Ad
+                    Sponsored Link
                   </span>
                 </div>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  Explore curated promotions & web offers from verified ad partners.
+                  Explore curated promotions & web resources from verified ad partners.
                 </p>
               </div>
             </div>
@@ -190,10 +190,11 @@ export default async function LandingPage() {
               href={smartlink1HeroUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all shrink-0 hover:scale-[1.02]"
-              title="Visit external sponsor deal"
+              aria-label="Continue to Resource (Opens sponsored partner resource in new window)"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all shrink-0 hover:scale-[1.02]"
+              title="Continue to Resource"
             >
-              <span>Explore Deals</span>
+              <span>Continue to Resource</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
@@ -299,9 +300,10 @@ export default async function LandingPage() {
                 href={smartlink1SectionUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-extrabold text-sm transition-all shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2 hover:scale-[1.02]"
+                aria-label="Continue to Resource (Opens sponsored partner resource in new window)"
+                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-extrabold text-sm transition-all shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2 hover:scale-[1.02]"
               >
-                <span>Explore Sponsored Partner Deals (External Ad)</span>
+                <span>Continue to Resource</span>
                 <ExternalLink className="w-4 h-4 stroke-[2.5]" />
               </a>
             </div>

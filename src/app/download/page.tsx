@@ -151,9 +151,10 @@ export default function DownloadPage() {
                   href={smartlink3Url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full sm:w-auto px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-gray-950 font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02]"
+                  aria-label="More Resources (Opens external partner resources in new window)"
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-gray-950 font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02]"
                 >
-                  <span>Explore Partner App Deals (External Ad)</span>
+                  <span>More Resources</span>
                   <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
                 </a>
               </div>

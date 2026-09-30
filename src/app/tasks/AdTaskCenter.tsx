@@ -67,7 +67,7 @@ const AD_CREATIVES = [
     installs: '10M+ Downloads',
     description: 'Build towers, recruit legendary heroes, and battle orc hordes!',
     color: 'from-amber-600 to-red-600',
-    cta: 'Visit Sponsor Website (External Ad)',
+    cta: 'Open Link',
     network: 'Adsterra Sponsor',
     adUrl: SMARTLINK_2_CTA_URL,
   },
@@ -78,7 +78,7 @@ const AD_CREATIVES = [
     installs: '5M+ Downloads',
     description: 'Zero commission trading on Bitcoin, Gold, and Tech Stocks.',
     color: 'from-blue-600 to-cyan-600',
-    cta: 'Visit Sponsor Website (External Ad)',
+    cta: 'Open Link',
     network: 'Featured Partner',
     adUrl: SMARTLINK_2_CTA_URL,
   },
@@ -89,7 +89,7 @@ const AD_CREATIVES = [
     installs: '2M+ Downloads',
     description: 'Sprint through futuristic neon cityscapes and dodge obstacles!',
     color: 'from-purple-600 to-pink-600',
-    cta: 'Visit Sponsor Website (External Ad)',
+    cta: 'Open Link',
     network: 'Verified Sponsor',
     adUrl: SMARTLINK_2_CTA_URL,
   },
@@ -622,10 +622,11 @@ export default function AdTaskCenter({
                 href={SMARTLINK_2_URL}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Open Link (Opens sponsored partner offer in new window)"
                 onClick={() => claimReward('AUTO_IMPRESSION', 15)}
                 className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 transition-all cursor-pointer hover:scale-[1.01]"
               >
-                <span>Visit Sponsored Partner Ad (External Ad)</span>
+                <span>Open Link</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
@@ -722,9 +723,10 @@ export default function AdTaskCenter({
                   href={SMARTLINK_2_CTA_URL}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Open Link (Opens sponsored partner offer in new window)"
                   className="px-4 py-2 rounded-xl bg-white hover:bg-gray-100 text-gray-950 font-black text-xs hover:scale-105 transition-transform shadow-xl flex items-center gap-1.5 cursor-pointer"
                 >
-                  <span>Visit Sponsor Website (External Ad)</span>
+                  <span>Open Link</span>
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </div>
