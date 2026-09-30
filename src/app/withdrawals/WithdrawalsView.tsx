@@ -185,7 +185,7 @@ export default function WithdrawalsView({
   // Persistent Hydration: Auto-sync bank account with server and local persistence
   useEffect(() => {
 
-    // 1. If server already passed initialPayoutMethod, use it; otherwise check user-scoped localStorage
+    // 1. Authoritative initialization from server-passed state
     if (initialPayoutMethod) {
       setSavedMethod(initialPayoutMethod);
       setUseSavedMethod(true);
@@ -193,15 +193,10 @@ export default function WithdrawalsView({
         localStorage.setItem(userStorageKey, JSON.stringify(initialPayoutMethod));
       } catch {}
     } else {
+      setSavedMethod(null);
+      setUseSavedMethod(false);
       try {
-        const cached = localStorage.getItem(userStorageKey);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (parsed && typeof parsed === 'object' && parsed.type) {
-            setSavedMethod(parsed);
-            setUseSavedMethod(true);
-          }
-        }
+        localStorage.removeItem(userStorageKey);
       } catch {}
     }
 
@@ -221,22 +216,11 @@ export default function WithdrawalsView({
               localStorage.setItem(userStorageKey, JSON.stringify(data.payoutDetails));
             } catch {}
           } else {
-            // Check if local cache has details that need syncing to the server
+            // New user or unlinked: ensure no bank is displayed by default
+            setSavedMethod(null);
+            setUseSavedMethod(false);
             try {
-              const localCached = localStorage.getItem(userStorageKey);
-              if (localCached) {
-                const parsedLocal = JSON.parse(localCached);
-                if (parsedLocal && typeof parsedLocal === 'object' && parsedLocal.type) {
-                  setSavedMethod(parsedLocal);
-                  setUseSavedMethod(true);
-                  // Self-heal: persist to server DB and file backup permanently
-                  fetch('/api/user/payout-method', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(parsedLocal),
-                  });
-                }
-              }
+              localStorage.removeItem(userStorageKey);
             } catch {}
           }
         }
@@ -698,7 +682,7 @@ export default function WithdrawalsView({
                 </div>
               ) : (
                 <p className="text-xs text-gray-400 max-w-xl">
-                  Koi default bank account linked nahi hai. Apne earnings ka withdrawal lene ke liye niche &apos;Add Bank Account&apos; button par click karke apna Bank Account ya UPI ID link karein.
+                  Koi bank account ya UPI ID linked nahi hai. Apne earnings ka withdrawal lene ke liye niche &apos;Add Bank Account&apos; button par click karke apna Bank Account ya UPI ID jodein.
                 </p>
               )}
             </div>
