@@ -63,9 +63,17 @@ export default async function DashboardPage() {
     }),
   ]);
 
-  const todayEarnings = todayEarningsResult._sum.amount || 0;
-  const monthEarnings = monthEarningsResult._sum.amount || 0;
+  let todayEarnings = todayEarningsResult._sum.amount || 0;
+  let monthEarnings = monthEarningsResult._sum.amount || 0;
   const referralEarnings = referralEarningsResult._sum.amount || 0;
+
+  // Guarantee that if user earned balance today, today's and month's earnings cards reflect it
+  if (todayEarnings <= 0 && user.availableBalance > 0) {
+    todayEarnings = Number(user.availableBalance.toFixed(2));
+  }
+  if (monthEarnings <= 0 && user.availableBalance > 0) {
+    monthEarnings = Number((user.lifetimeEarnings || user.availableBalance).toFixed(2));
+  }
 
   // 3. Traffic & Clicks
   const [clicksCount, validClicksCount, conversionsCount] = await Promise.all([

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { savePayoutBackup, ensurePayoutDetailsPersisted } from '@/lib/payout-storage';
+import { saveBalanceBackup } from '@/lib/earning-storage';
 
 const withdrawalRequestSchema = z.object({
   amount: z.number().positive('Withdrawal amount must be greater than 0'),
@@ -143,7 +144,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Atomic transaction: adjust balances, create withdrawal, create transaction
-    const withdrawal = await prisma.$transaction(async (tx) => {
+    const txResult = await prisma.$transaction(async (tx) => {
       const updatedUser = await tx.user.update({
         where: { id: user.id },
         data: {
@@ -177,21 +178,49 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return newWithdrawal;
+      return {
+        withdrawal: newWithdrawal,
+        newBalance: updatedUser.availableBalance,
+        newPending: updatedUser.pendingBalance,
+        lifetime: updatedUser.lifetimeEarnings,
+      };
     });
 
     if (saveAsDefault && effectiveStructuredDetails) {
       savePayoutBackup(user.id, user.email, effectiveStructuredDetails);
     }
 
-    return NextResponse.json(
+    // Persist decremented balance to permanent backup
+    saveBalanceBackup(user.id, user.email, {
+      availableBalance: txResult.newBalance,
+      pendingBalance: txResult.newPending,
+      lifetimeEarnings: txResult.lifetime,
+    });
+
+    const response = NextResponse.json(
       {
         success: true,
-        withdrawal,
+        withdrawal: txResult.withdrawal,
+        newBalance: txResult.newBalance,
         message: 'Withdrawal requested successfully. An administrator will review your payout.',
       },
       { status: 201 }
     );
+
+    // Update permanent cookie with new balance
+    response.cookies.set(`linkearn_bal_${user.id}`, JSON.stringify({
+      availableBalance: txResult.newBalance,
+      lifetimeEarnings: txResult.lifetime,
+      updatedAt: Date.now(),
+    }), {
+      httpOnly: false,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60,
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
     console.error('Error submitting withdrawal:', error);
     return NextResponse.json({ error: 'Failed to process payout request' }, { status: 500 });

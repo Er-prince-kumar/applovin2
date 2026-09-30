@@ -83,7 +83,20 @@ export default function WithdrawalsView({
   const router = useRouter();
   const userStorageKey = `linkearn_saved_bank_${userId}`;
   const [withdrawals, setWithdrawals] = useState<WithdrawalRecord[]>(initialWithdrawals);
-  const [available, setAvailable] = useState(availableBalance);
+  const [available, setAvailable] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(`linkearn_balance_${userId}`);
+        if (stored) {
+          const num = parseFloat(stored);
+          if (!isNaN(num) && num > availableBalance) {
+            return num;
+          }
+        }
+      } catch {}
+    }
+    return availableBalance;
+  });
   const [pending, setPending] = useState(pendingBalance);
   const [lifetime, setLifetime] = useState(lifetimeEarnings);
 
@@ -101,6 +114,9 @@ export default function WithdrawalsView({
             setAvailable(data.balances.available);
             setPending(data.balances.pending);
             setLifetime(data.balances.lifetime);
+            try {
+              localStorage.setItem(`linkearn_balance_${userId}`, String(data.balances.available));
+            } catch {}
           }
           if (data?.withdrawals) {
             setWithdrawals(data.withdrawals);
@@ -122,13 +138,24 @@ export default function WithdrawalsView({
     const handleFocus = () => syncRealtimeBalances();
     window.addEventListener('focus', handleFocus);
 
+    const handleBalanceUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail && typeof customEvent.detail.balance === 'number') {
+        if (!userId || customEvent.detail.userId === userId) {
+          setAvailable(customEvent.detail.balance);
+        }
+      }
+    };
+    window.addEventListener('linkearn_balance_update', handleBalanceUpdate);
+
     const interval = setInterval(syncRealtimeBalances, 8000);
 
     return () => {
       window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('linkearn_balance_update', handleBalanceUpdate);
       clearInterval(interval);
     };
-  }, []);
+  }, [userId, userStorageKey]);
 
   // Saved Bank Account state
   const [savedMethod, setSavedMethod] = useState<PayoutMethodData | null>(

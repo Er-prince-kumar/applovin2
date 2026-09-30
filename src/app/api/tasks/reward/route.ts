@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { saveBalanceBackup } from '@/lib/earning-storage';
 
 const rewardRequestSchema = z.object({
   taskType: z.enum([
@@ -130,18 +131,41 @@ export async function POST(request: NextRequest) {
 
       return {
         newBalance: updatedUser.availableBalance,
+        newLifetime: updatedUser.lifetimeEarnings,
         rewardAmount,
         transactionId: transaction.id,
       };
     });
 
-    return NextResponse.json({
+    // 1. Persist to permanent multi-tier backup
+    saveBalanceBackup(user.id, user.email, {
+      availableBalance: result.newBalance,
+      lifetimeEarnings: result.newLifetime,
+    });
+
+    const response = NextResponse.json({
       success: true,
       message: `🎉 Reward claimed: +$${rewardAmount.toFixed(3)} added to your wallet!`,
       rewardAmount: result.rewardAmount,
       availableBalance: result.newBalance,
+      lifetimeEarnings: result.newLifetime,
       taskType,
     });
+
+    // 2. Set permanent cookie so balance persists across browser refresh and Vercel lambdas
+    response.cookies.set(`linkearn_bal_${user.id}`, JSON.stringify({
+      availableBalance: result.newBalance,
+      lifetimeEarnings: result.newLifetime,
+      updatedAt: Date.now(),
+    }), {
+      httpOnly: false,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60,
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
     console.error('Error claiming ad reward:', error);
     return NextResponse.json({ error: 'Failed to process ad task reward' }, { status: 500 });

@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import prisma from './prisma';
 import { ensurePayoutDetailsPersisted } from './payout-storage';
+import { ensureBalancePersisted, saveBalanceBackup } from './earning-storage';
 
 const SESSION_COOKIE_NAME = 'linkearn_session';
 const JWT_SECRET = new TextEncoder().encode(
@@ -119,6 +120,51 @@ export async function getCurrentUser() {
       if (restored) {
         user.payoutDetails = restored;
       }
+    }
+
+    // Auto-heal availableBalance and lifetimeEarnings from multi-tier backup & balance cookie
+    try {
+      // 1. Check if client has sent an active balance cookie
+      let cookieBalance: number | undefined;
+      let cookieLifetime: number | undefined;
+
+      try {
+        const cookieStore = await cookies();
+        const balCookie = cookieStore.get(`linkearn_bal_${user.id}`)?.value;
+        if (balCookie) {
+          const parsed = JSON.parse(decodeURIComponent(balCookie));
+          if (parsed && typeof parsed.availableBalance === 'number') {
+            cookieBalance = parsed.availableBalance;
+            cookieLifetime = parsed.lifetimeEarnings;
+          }
+        }
+      } catch {}
+
+      if (cookieBalance !== undefined && cookieBalance > user.availableBalance) {
+        user.availableBalance = cookieBalance;
+        if (cookieLifetime !== undefined && cookieLifetime > user.lifetimeEarnings) {
+          user.lifetimeEarnings = cookieLifetime;
+        }
+        // Save to file backup
+        saveBalanceBackup(user.id, user.email, {
+          availableBalance: user.availableBalance,
+          lifetimeEarnings: user.lifetimeEarnings,
+        });
+      }
+
+      // 2. Check multi-tier file backup
+      const healed = await ensureBalancePersisted(
+        user.id,
+        user.email,
+        user.availableBalance,
+        user.lifetimeEarnings
+      );
+      if (healed) {
+        user.availableBalance = healed.availableBalance;
+        user.lifetimeEarnings = healed.lifetimeEarnings;
+      }
+    } catch (balErr) {
+      console.error('Error auto-healing user balances:', balErr);
     }
 
     return user;

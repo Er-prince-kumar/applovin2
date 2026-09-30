@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Logo from '@/components/brand/Logo';
@@ -26,6 +26,7 @@ import { formatCurrency } from '@/lib/utils';
 
 interface SidebarProps {
   user: {
+    id?: string;
     name: string;
     email: string;
     role: string;
@@ -51,6 +52,42 @@ const navItems = [
 
 export default function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
+  const [balance, setBalance] = useState(user.availableBalance);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const idKey = user.id ? `linkearn_balance_${user.id}` : null;
+        const stored = (idKey && localStorage.getItem(idKey)) || localStorage.getItem(`linkearn_balance_${user.email}`);
+        if (stored) {
+          const num = parseFloat(stored);
+          if (!isNaN(num) && num > balance) {
+            setBalance(num);
+          }
+        }
+      } catch {}
+    }
+
+    const handleUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail && typeof customEvent.detail.balance === 'number') {
+        if (!user.id || !customEvent.detail.userId || customEvent.detail.userId === user.id) {
+          setBalance(customEvent.detail.balance);
+        }
+      }
+    };
+
+    window.addEventListener('linkearn_balance_update', handleUpdate);
+    return () => {
+      window.removeEventListener('linkearn_balance_update', handleUpdate);
+    };
+  }, [user.id, user.email, balance]);
+
+  useEffect(() => {
+    if (user.availableBalance > balance) {
+      setBalance(user.availableBalance);
+    }
+  }, [user.availableBalance]);
 
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -70,7 +107,7 @@ export default function Sidebar({ user }: SidebarProps) {
           Available Balance
         </div>
         <div className="text-xl font-bold text-emerald-400 mt-1">
-          {formatCurrency(user.availableBalance)}
+          {formatCurrency(balance)}
         </div>
         <div className="text-[11px] text-gray-400 mt-0.5 flex justify-between items-center">
           <span>Pending: {formatCurrency(user.pendingBalance)}</span>

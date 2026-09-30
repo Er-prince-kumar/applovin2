@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Play,
@@ -102,8 +102,100 @@ export default function AdTaskCenter({
   const { toast } = useToast();
   const sessionKey = `linkearn_ad_session_${initialUser.id}`;
 
-  const [balance, setBalance] = useState(initialUser.availableBalance);
-  const [adsWatchedToday, setAdsWatchedToday] = useState(initialAdsWatchedToday);
+  // Wallet Balance - Persisted permanently in localStorage and synced with cookies
+  const [balance, setBalance] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(`linkearn_balance_${initialUser.id}`);
+        if (saved) {
+          const parsed = parseFloat(saved);
+          if (!isNaN(parsed) && parsed > (initialUser.availableBalance || 0)) {
+            return parsed;
+          }
+        }
+      } catch {}
+    }
+    return initialUser.availableBalance || 0;
+  });
+
+  // Daily Tasks Count - Persisted by date key so it never resets to 0 on refresh
+  const [adsWatchedToday, setAdsWatchedToday] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const saved = localStorage.getItem(`linkearn_ads_today_${initialUser.id}_${todayStr}`);
+        if (saved) {
+          const parsed = parseInt(saved, 10);
+          if (!isNaN(parsed) && parsed > (initialAdsWatchedToday || 0)) {
+            return parsed;
+          }
+        }
+      } catch {}
+    }
+    return initialAdsWatchedToday || 0;
+  });
+
+  // Helper to persist balance to localStorage, cookie, and global event
+  const updateBalance = useCallback((newBal: number, newLifetime?: number) => {
+    setBalance(newBal);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(`linkearn_balance_${initialUser.id}`, String(newBal));
+        if (newLifetime !== undefined) {
+          localStorage.setItem(`linkearn_lifetime_${initialUser.id}`, String(newLifetime));
+        }
+        document.cookie = `linkearn_bal_${initialUser.id}=${encodeURIComponent(
+          JSON.stringify({
+            availableBalance: newBal,
+            lifetimeEarnings: newLifetime,
+            updatedAt: Date.now(),
+          })
+        )}; path=/; max-age=2592000; SameSite=Lax`;
+
+        window.dispatchEvent(
+          new CustomEvent('linkearn_balance_update', {
+            detail: { balance: newBal, userId: initialUser.id, lifetimeEarnings: newLifetime },
+          })
+        );
+      } catch {}
+    }
+  }, [initialUser.id]);
+
+  const incrementAdsWatched = useCallback(() => {
+    setAdsWatchedToday((prev) => {
+      const next = prev + 1;
+      if (typeof window !== 'undefined') {
+        try {
+          const todayStr = new Date().toISOString().split('T')[0];
+          localStorage.setItem(`linkearn_ads_today_${initialUser.id}_${todayStr}`, String(next));
+        } catch {}
+      }
+      return next;
+    });
+  }, [initialUser.id]);
+
+  // Synchronize client balance with server in background if client has higher balance
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedBalStr = localStorage.getItem(`linkearn_balance_${initialUser.id}`);
+        if (savedBalStr) {
+          const savedBal = parseFloat(savedBalStr);
+          if (!isNaN(savedBal) && savedBal > initialUser.availableBalance) {
+            fetch('/api/user/sync-balance', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                balance: savedBal,
+                adsWatchedToday: adsWatchedToday,
+              }),
+            }).catch(() => {});
+          }
+        }
+      } catch {}
+    }
+  }, [initialUser.id, initialUser.availableBalance, adsWatchedToday]);
+
   const [isAdPlaying, setIsAdPlaying] = useState(false);
   const [currentAdType, setCurrentAdType] = useState<'REWARDED_VIDEO' | 'INTERSTITIAL'>('REWARDED_VIDEO');
   const [adSecondsRemaining, setAdSecondsRemaining] = useState(30);
@@ -210,8 +302,8 @@ export default function AdTaskCenter({
 
       const data = await res.json();
       if (res.ok && data.success) {
-        setBalance(data.availableBalance);
-        setAdsWatchedToday((prev) => prev + 1);
+        updateBalance(data.availableBalance, data.lifetimeEarnings);
+        incrementAdsWatched();
         toast(data.message, 'success');
       } else {
         toast(data.error || 'Failed to claim reward', 'error');
@@ -275,8 +367,8 @@ export default function AdTaskCenter({
         const data = await res.json();
         if (res.ok && data.success) {
           setSpinResult(data.rewardAmount);
-          setBalance(data.availableBalance);
-          setAdsWatchedToday((prev) => prev + 1);
+          updateBalance(data.availableBalance, data.lifetimeEarnings);
+          incrementAdsWatched();
           toast(`🎡 Lucky Wheel Won: +$${data.rewardAmount.toFixed(3)}!`, 'success');
         }
       } finally {
@@ -306,8 +398,8 @@ export default function AdTaskCenter({
     if (res.ok && data.success) {
       setScratchReward(data.rewardAmount);
       setScratchRevealed(true);
-      setBalance(data.availableBalance);
-      setAdsWatchedToday((prev) => prev + 1);
+      updateBalance(data.availableBalance, data.lifetimeEarnings);
+      incrementAdsWatched();
       toast(`🎉 Card Scratched: +$${data.rewardAmount.toFixed(3)}!`, 'success');
     }
   }

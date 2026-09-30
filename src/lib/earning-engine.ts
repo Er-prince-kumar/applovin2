@@ -1,4 +1,5 @@
 import prisma from './prisma';
+import { saveBalanceBackup } from './earning-storage';
 
 export interface EarningProcessingResult {
   amount: number;
@@ -84,6 +85,11 @@ export async function processEarningForClick({
     },
   });
 
+  saveBalanceBackup(updatedUser.id, updatedUser.email, {
+    availableBalance: updatedUser.availableBalance,
+    lifetimeEarnings: updatedUser.lifetimeEarnings,
+  });
+
   // 3. Create immutable ledger Transaction
   await prisma.transaction.create({
     data: {
@@ -137,6 +143,11 @@ export async function processEarningForClick({
             availableBalance: { increment: referralBonus },
             lifetimeEarnings: { increment: referralBonus },
           },
+        });
+
+        saveBalanceBackup(updatedReferrer.id, updatedReferrer.email, {
+          availableBalance: updatedReferrer.availableBalance,
+          lifetimeEarnings: updatedReferrer.lifetimeEarnings,
         });
 
         await prisma.transaction.create({

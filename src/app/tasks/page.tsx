@@ -2,6 +2,7 @@ import React from 'react';
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import prisma from '@/lib/prisma';
+import { getBalanceBackup } from '@/lib/earning-storage';
 import DashboardShell from '@/components/layout/DashboardShell';
 import AdTaskCenter from './AdTaskCenter';
 
@@ -21,8 +22,9 @@ export default async function TasksPage() {
 
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayStr = now.toISOString().split('T')[0];
 
-  const todayTasksCount = await prisma.transaction.count({
+  let todayTasksCount = await prisma.transaction.count({
     where: {
       userId: user.id,
       type: 'EARNING',
@@ -30,6 +32,11 @@ export default async function TasksPage() {
       createdAt: { gte: startOfToday },
     },
   });
+
+  const backup = getBalanceBackup(user.id, user.email);
+  if (backup && backup.adsWatchedDate === todayStr && (backup.adsWatchedToday || 0) > todayTasksCount) {
+    todayTasksCount = backup.adsWatchedToday!;
+  }
 
   return (
     <DashboardShell
