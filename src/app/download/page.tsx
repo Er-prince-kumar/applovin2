@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import DownloadClientSection from './DownloadClientSection';
 import { ADSTERRA_SMARTLINKS, getSmartlinkWithSubId } from '@/lib/adsterra';
+import GoogleAdUnit from '@/components/ads/GoogleAdUnit';
 
 export const metadata = {
   title: 'Download LinkEarn Mobile App | Android APK & iOS',
@@ -246,6 +247,11 @@ export default function DownloadPage() {
             </p>
           </div>
         </div>
+      </section>
+
+      {/* Google AdSense Showcase Banner */}
+      <section className="max-w-7xl mx-auto px-6 w-full py-4">
+        <GoogleAdUnit />
       </section>
 
       {/* Footer */}

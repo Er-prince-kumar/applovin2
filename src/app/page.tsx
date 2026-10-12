@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { getCurrentUser } from '@/lib/auth';
 import { ADSTERRA_SMARTLINKS, getSmartlinkWithSubId } from '@/lib/adsterra';
+import GoogleAdUnit from '@/components/ads/GoogleAdUnit';
 
 export default async function LandingPage() {
   const user = await getCurrentUser();
@@ -517,6 +518,11 @@ export default async function LandingPage() {
             </p>
           </div>
         </div>
+      </section>
+
+      {/* Google AdSense Showcase Banner */}
+      <section className="max-w-7xl mx-auto px-6 w-full py-4">
+        <GoogleAdUnit />
       </section>
 
       {/* Footer */}

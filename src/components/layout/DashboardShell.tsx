@@ -7,6 +7,7 @@ import MobileNav from './MobileNav';
 import MobileBottomBar from './MobileBottomBar';
 import { ToastProvider } from '@/components/ui/Toast';
 import AppInstallModal from '@/components/pwa/AppInstallModal';
+import GoogleAdUnit from '@/components/ads/GoogleAdUnit';
 
 interface DashboardShellProps {
   user: {
@@ -58,6 +59,7 @@ export default function DashboardShell({
 
           <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto pb-24 md:pb-8">
             {children}
+            <GoogleAdUnit className="mt-8" />
           </main>
 
           {/* Native Mobile Bottom Tabs */}
